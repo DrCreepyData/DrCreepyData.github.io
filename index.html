@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tales From The Creeps</title>
+<style>
+  :root {
+    --bg: #0a0d12;
+    --surface: #111520;
+    --surface2: #1a1f2e;
+    --border: #2a2f42;
+    --accent: #c0392b;
+    --accent2: #e74c3c;
+    --text: #e0e0e0;
+    --text-muted: #7a8099;
+    --text-dim: #4a5068;
+    --green: #27ae60;
+    --gold: #f39c12;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Georgia', serif; min-height: 100vh; }
+
+  /* Header */
+  header { background: var(--surface); border-bottom: 2px solid var(--accent); padding: 20px 24px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; }
+  header h1 { font-size: 1.5rem; letter-spacing: 1px; color: #fff; }
+  header h1 span { color: var(--accent2); }
+  .header-sub { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; margin-top: 2px; }
+  .skull { font-size: 1.8rem; }
+
+  /* Controls */
+  .controls { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .search-wrap { flex: 1; min-width: 200px; position: relative; }
+  .search-wrap input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px 8px 36px; color: var(--text); font-size: 0.9rem; outline: none; }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap::before { content: '🔍'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; }
+  select, .pill-group { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-size: 0.85rem; cursor: pointer; outline: none; }
+  select:focus { border-color: var(--accent); }
+  .pill-group { display: flex; gap: 0; padding: 0; overflow: hidden; }
+  .pill-group button { background: none; border: none; color: var(--text-muted); padding: 8px 12px; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; white-space: nowrap; }
+  .pill-group button.active { background: var(--accent); color: #fff; }
+  .pill-group button:hover:not(.active) { background: var(--border); color: var(--text); }
+  .count-badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; }
+
+  /* Author filter bar */
+  .author-bar { display: none; background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 24px; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .author-bar.show { display: flex; }
+  .author-bar label { font-size: 0.8rem; color: var(--text-muted); }
+  .author-bar input { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; color: var(--text); font-size: 0.85rem; outline: none; width: 200px; }
+  .author-bar input:focus { border-color: var(--accent); }
+  .popular-authors { display: flex; gap: 6px; flex-wrap: wrap; }
+  .author-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer; color: var(--text-muted); transition: all 0.15s; }
+  .author-chip:hover, .author-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* Story grid */
+  main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+  .story-list { display: flex; flex-direction: column; gap: 12px; }
+
+  /* Story card */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
+  .card:hover { border-color: var(--accent); }
+  .card-header { padding: 14px 16px; cursor: pointer; display: flex; gap: 14px; align-items: flex-start; }
+  .score-box { background: var(--surface2); border-radius: 6px; padding: 6px 10px; text-align: center; min-width: 52px; flex-shrink: 0; }
+  .score-box .score { font-size: 1.1rem; font-weight: bold; color: var(--gold); line-height: 1; }
+  .score-box .score-label { font-size: 0.65rem; color: var(--text-dim); margin-top: 2px; }
+  .card-meta { flex: 1; min-width: 0; }
+  .card-title { font-size: 1rem; color: #fff; line-height: 1.4; margin-bottom: 6px; }
+  .card-info { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.75rem; color: var(--text-muted); font-family: monospace; }
+  .card-info .author { color: var(--accent2); cursor: pointer; }
+  .card-info .author:hover { text-decoration: underline; }
+  .flair-tag { background: var(--surface2); border-radius: 3px; padding: 1px 6px; font-size: 0.7rem; color: var(--text-muted); }
+  .expand-icon { color: var(--text-dim); font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; transition: transform 0.2s; }
+  .card.open .expand-icon { transform: rotate(180deg); }
+
+  /* Story text */
+  .story-body { display: none; padding: 0 16px 16px; border-top: 1px solid var(--border); }
+  .card.open .story-body { display: block; }
+  .story-text { margin-top: 16px; font-size: 0.95rem; line-height: 1.8; color: #ccc; white-space: pre-wrap; word-break: break-word; max-height: 60vh; overflow-y: auto; padding-right: 8px; }
+  .story-text::-webkit-scrollbar { width: 4px; }
+  .story-text::-webkit-scrollbar-track { background: var(--surface2); }
+  .story-text::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .story-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .btn { padding: 6px 14px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; }
+  .btn-reddit { background: #ff4500; color: #fff; }
+  .btn-reddit:hover { background: #e03d00; }
+  .btn-author { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-author:hover { border-color: var(--accent); color: var(--accent2); }
+  .btn-expand { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-expand:hover { border-color: var(--accent); }
+
+  /* Loading / empty */
+  .loading { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .loading .spinner { font-size: 2rem; animation: spin 1s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .empty .icon { font-size: 3rem; margin-bottom: 12px; }
+
+  /* Load more */
+  .load-more { text-align: center; margin-top: 24px; }
+  .load-more button { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px 28px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .load-more button:hover { border-color: var(--accent); color: var(--accent2); }
+
+  /* Scrollbar for page */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 600px) {
+    header { padding: 14px 16px; }
+    .controls { padding: 10px 16px; }
+    .card-header { gap: 10px; }
+    .score-box { min-width: 44px; padding: 4px 6px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="skull">💀</div>
+  <div>
+    <h1>Tales From <span>The Creeps</span></h1>
+    <div class="header-sub">r/TalesFromTheCreeps story browser</div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="Search titles…" oninput="onFilter()">
+  </div>
+  <div class="pill-group">
+    <button class="active" onclick="setSort('score',this)">⭐ Top Rated</button>
+    <button onclick="setSort('recent',this)">🕐 Recent</button>
+  </div>
+  <select id="lenFilter" onchange="onFilter()">
+    <option value="0">Any length</option>
+    <option value="1000">Medium (1k+ words)</option>
+    <option value="2000" selected>Long (2k+ words)</option>
+    <option value="5000">Epic (5k+ words)</option>
+  </select>
+  <button class="pill-group" style="padding:0" onclick="toggleAuthorBar()">
+    <span style="padding:8px 12px;display:block;font-size:0.8rem;color:var(--text-muted)">👤 Author</span>
+  </button>
+  <div class="count-badge" id="countBadge">Loading…</div>
+</div>
+
+<div class="author-bar" id="authorBar">
+  <label>Filter by author:</label>
+  <input type="text" id="authorInput" placeholder="e.g. ChristianWallis" oninput="onFilter()">
+  <div class="popular-authors" id="popularAuthors"></div>
+</div>
+
+<main>
+  <div class="loading" id="loading">
+    <div class="spinner">💀</div>
+    <p style="margin-top:16px">Loading stories…</p>
+  </div>
+  <div class="story-list" id="storyList"></div>
+  <div class="empty" id="emptyState" style="display:none">
+    <div class="icon">🕯️</div>
+    <p>No stories found. Try adjusting your filters.</p>
+  </div>
+  <div class="load-more" id="loadMore" style="display:none">
+    <button onclick="showMore()">Load more stories</button>
+  </div>
+</main>
+
+<script>
+let allStories = [];
+let filtered = [];
+let sortMode = 'score';
+let page = 0;
+const PAGE_SIZE = 30;
+
+async function init() {
+  const r = await fetch('data/stories.json');
+  allStories = await r.json();
+  document.getElementById('loading').style.display = 'none';
+  buildPopularAuthors();
+  onFilter();
+}
+
+function buildPopularAuthors() {
+  const counts = {};
+  allStories.forEach(s => { counts[s.author] = (counts[s.author]||0) + 1; });
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
+  // Always include ChristianWallis if present
+  const featured = ['ChristianWallis', ...top.filter(a=>a!=='ChristianWallis')].slice(0,8);
+  const container = document.getElementById('popularAuthors');
+  featured.forEach(author => {
+    if (!allStories.find(s=>s.author===author)) return;
+    const chip = document.createElement('span');
+    chip.className = 'author-chip';
+    chip.textContent = author;
+    chip.onclick = () => {
+      document.getElementById('authorInput').value = author;
+      document.querySelectorAll('.author-chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      onFilter();
+    };
+    container.appendChild(chip);
+  });
+}
+
+function setSort(mode, btn) {
+  sortMode = mode;
+  document.querySelectorAll('.pill-group button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  onFilter();
+}
+
+function toggleAuthorBar() {
+  document.getElementById('authorBar').classList.toggle('show');
+}
+
+function onFilter() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const author = document.getElementById('authorInput').value.trim().toLowerCase();
+  const minWords = parseInt(document.getElementById('lenFilter').value) || 0;
+
+  filtered = allStories.filter(s => {
+    if (minWords && s.word_count < minWords) return false;
+    if (author && !s.author.toLowerCase().includes(author)) return false;
+    if (q && !s.title.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if (sortMode === 'score') {
+    filtered.sort((a,b) => b.score - a.score);
+  } else {
+    filtered.sort((a,b) => b.created_utc - a.created_utc);
+  }
+
+  page = 0;
+  document.getElementById('storyList').innerHTML = '';
+  document.getElementById('countBadge').textContent = `${filtered.length.toLocaleString()} stories`;
+  document.getElementById('emptyState').style.display = filtered.length ? 'none' : 'block';
+  renderPage();
+}
+
+function renderPage() {
+  const list = document.getElementById('storyList');
+  const slice = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  slice.forEach(s => list.appendChild(makeCard(s)));
+  page++;
+  const loadMore = document.getElementById('loadMore');
+  loadMore.style.display = page * PAGE_SIZE < filtered.length ? 'block' : 'none';
+}
+
+function showMore() { renderPage(); }
+
+function makeCard(s) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  const date = new Date(s.created_utc * 1000).toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'});
+  const wc = s.word_count >= 1000 ? (s.word_count/1000).toFixed(1)+'k' : s.word_count;
+
+  card.innerHTML = `
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="score-box">
+        <div class="score">${s.score}</div>
+        <div class="score-label">points</div>
+      </div>
+      <div class="card-meta">
+        <div class="card-title">${escHtml(s.title)}</div>
+        <div class="card-info">
+          <span class="author" onclick="filterByAuthor('${escHtml(s.author)}',event)">u/${escHtml(s.author)}</span>
+          <span>📅 ${date}</span>
+          <span>📖 ${wc} words</span>
+          <span>💬 ${s.num_comments}</span>
+          ${s.flair ? `<span class="flair-tag">${escHtml(s.flair)}</span>` : ''}
+        </div>
+      </div>
+      <div class="expand-icon">▼</div>
+    </div>
+    <div class="story-body">
+      <div class="story-text">${escHtml(s.text)}</div>
+      <div class="story-actions">
+        <a href="${escHtml(s.url)}" target="_blank" class="btn btn-reddit">View on Reddit ↗</a>
+        <button class="btn btn-author" onclick="filterByAuthor('${escHtml(s.author)}',event)">More by u/${escHtml(s.author)}</button>
+      </div>
+    </div>`;
+  return card;
+}
+
+function toggleCard(header) {
+  const card = header.closest('.card');
+  card.classList.toggle('open');
+}
+
+function filterByAuthor(author, e) {
+  e.stopPropagation();
+  document.getElementById('authorInput').value = author;
+  document.getElementById('authorBar').classList.add('show');
+  document.querySelectorAll('.author-chip').forEach(c => {
+    c.classList.toggle('active', c.textContent === author);
+  });
+  onFilter();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+init();
+</script>
+</body>
+</html>
