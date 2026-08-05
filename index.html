@@ -15,32 +15,50 @@
     --text: #e0e0e0;
     --text-muted: #7a8099;
     --text-dim: #4a5068;
-    --green: #27ae60;
     --gold: #f39c12;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'Georgia', serif; min-height: 100vh; }
 
-  /* Header */
-  header { background: var(--surface); border-bottom: 2px solid var(--accent); padding: 20px 24px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; }
+  header { background: var(--surface); border-bottom: 2px solid var(--accent); padding: 18px 24px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; }
   header h1 { font-size: 1.5rem; letter-spacing: 1px; color: #fff; }
   header h1 span { color: var(--accent2); }
   .header-sub { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; margin-top: 2px; }
   .skull { font-size: 1.8rem; }
 
+  /* Mode tabs */
+  .mode-tabs { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; }
+  .mode-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); border-bottom: 2px solid transparent; transition: all 0.15s; user-select: none; }
+  .mode-tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
+  .mode-tab:hover:not(.active) { color: var(--text); }
+
   /* Controls */
-  .controls { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .controls { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   .search-wrap { flex: 1; min-width: 200px; position: relative; }
   .search-wrap input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px 8px 36px; color: var(--text); font-size: 0.9rem; outline: none; }
   .search-wrap input:focus { border-color: var(--accent); }
-  .search-wrap::before { content: '🔍'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; }
-  select, .pill-group { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-size: 0.85rem; cursor: pointer; outline: none; }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; pointer-events: none; }
+  select { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-size: 0.85rem; cursor: pointer; outline: none; }
   select:focus { border-color: var(--accent); }
-  .pill-group { display: flex; gap: 0; padding: 0; overflow: hidden; }
+  .pill-group { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
   .pill-group button { background: none; border: none; color: var(--text-muted); padding: 8px 12px; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; white-space: nowrap; }
   .pill-group button.active { background: var(--accent); color: #fff; }
   .pill-group button:hover:not(.active) { background: var(--border); color: var(--text); }
   .count-badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; }
+
+  /* Semantic search bar */
+  .semantic-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: none; flex-direction: column; gap: 10px; }
+  .semantic-bar.show { display: flex; }
+  .semantic-row { display: flex; gap: 10px; align-items: center; }
+  .semantic-row input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; color: var(--text); font-size: 0.95rem; outline: none; font-family: Georgia, serif; }
+  .semantic-row input:focus { border-color: var(--accent); }
+  .btn-search { background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 10px 20px; cursor: pointer; font-size: 0.9rem; white-space: nowrap; transition: background 0.15s; }
+  .btn-search:hover { background: var(--accent2); }
+  .btn-search:disabled { opacity: 0.5; cursor: not-allowed; }
+  .model-status { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; }
+  .model-status.ready { color: #27ae60; }
+  .model-status.loading { color: var(--gold); }
+  .model-status.error { color: var(--accent2); }
 
   /* Author filter bar */
   .author-bar { display: none; background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 24px; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -52,17 +70,20 @@
   .author-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer; color: var(--text-muted); transition: all 0.15s; }
   .author-chip:hover, .author-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-  /* Story grid */
+  /* Story list */
   main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
   .story-list { display: flex; flex-direction: column; gap: 12px; }
 
-  /* Story card */
+  /* Card */
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
   .card:hover { border-color: var(--accent); }
   .card-header { padding: 14px 16px; cursor: pointer; display: flex; gap: 14px; align-items: flex-start; }
   .score-box { background: var(--surface2); border-radius: 6px; padding: 6px 10px; text-align: center; min-width: 52px; flex-shrink: 0; }
   .score-box .score { font-size: 1.1rem; font-weight: bold; color: var(--gold); line-height: 1; }
   .score-box .score-label { font-size: 0.65rem; color: var(--text-dim); margin-top: 2px; }
+  .sim-box { background: var(--surface2); border-radius: 6px; padding: 6px 10px; text-align: center; min-width: 52px; flex-shrink: 0; }
+  .sim-box .sim { font-size: 1.1rem; font-weight: bold; color: #27ae60; line-height: 1; }
+  .sim-box .sim-label { font-size: 0.65rem; color: var(--text-dim); margin-top: 2px; }
   .card-meta { flex: 1; min-width: 0; }
   .card-title { font-size: 1rem; color: #fff; line-height: 1.4; margin-bottom: 6px; }
   .card-info { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.75rem; color: var(--text-muted); font-family: monospace; }
@@ -71,8 +92,6 @@
   .flair-tag { background: var(--surface2); border-radius: 3px; padding: 1px 6px; font-size: 0.7rem; color: var(--text-muted); }
   .expand-icon { color: var(--text-dim); font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; transition: transform 0.2s; }
   .card.open .expand-icon { transform: rotate(180deg); }
-
-  /* Story text */
   .story-body { display: none; padding: 0 16px 16px; border-top: 1px solid var(--border); }
   .card.open .story-body { display: block; }
   .story-text { margin-top: 16px; font-size: 0.95rem; line-height: 1.8; color: #ccc; white-space: pre-wrap; word-break: break-word; max-height: 60vh; overflow-y: auto; padding-right: 8px; }
@@ -81,35 +100,29 @@
   .story-text::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
   .story-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
   .btn { padding: 6px 14px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; }
-  .btn-reddit { background: #ff4500; color: #fff; }
+  .btn-reddit { background: #ff4500; color: #fff; text-decoration: none; display: inline-block; line-height: 1.8; }
   .btn-reddit:hover { background: #e03d00; }
   .btn-author { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
   .btn-author:hover { border-color: var(--accent); color: var(--accent2); }
-  .btn-expand { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn-expand:hover { border-color: var(--accent); }
 
-  /* Loading / empty */
   .loading { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-  .loading .spinner { font-size: 2rem; animation: spin 1s linear infinite; display: inline-block; }
+  .spinner { font-size: 2rem; animation: spin 1s linear infinite; display: inline-block; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
   .empty .icon { font-size: 3rem; margin-bottom: 12px; }
-
-  /* Load more */
   .load-more { text-align: center; margin-top: 24px; }
   .load-more button { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px 28px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
   .load-more button:hover { border-color: var(--accent); color: var(--accent2); }
 
-  /* Scrollbar for page */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
   @media (max-width: 600px) {
     header { padding: 14px 16px; }
-    .controls { padding: 10px 16px; }
+    .controls, .semantic-bar { padding: 10px 16px; }
     .card-header { gap: 10px; }
-    .score-box { min-width: 44px; padding: 4px 6px; }
+    .score-box, .sim-box { min-width: 44px; padding: 4px 6px; }
   }
 </style>
 </head>
@@ -123,8 +136,15 @@
   </div>
 </header>
 
-<div class="controls">
+<div class="mode-tabs">
+  <div class="mode-tab active" id="tab-browse" onclick="setMode('browse')">📚 Browse</div>
+  <div class="mode-tab" id="tab-semantic" onclick="setMode('semantic')">🔮 Semantic Search</div>
+</div>
+
+<!-- Browse controls -->
+<div class="controls" id="browseControls">
   <div class="search-wrap">
+    <span class="search-icon">🔍</span>
     <input type="text" id="searchInput" placeholder="Search titles…" oninput="onFilter()">
   </div>
   <div class="pill-group">
@@ -137,8 +157,8 @@
     <option value="2000" selected>Long (2k+ words)</option>
     <option value="5000">Epic (5k+ words)</option>
   </select>
-  <button class="pill-group" style="padding:0" onclick="toggleAuthorBar()">
-    <span style="padding:8px 12px;display:block;font-size:0.8rem;color:var(--text-muted)">👤 Author</span>
+  <button class="pill-group" style="border:1px solid var(--border);border-radius:6px;" onclick="toggleAuthorBar()">
+    <button style="background:none;border:none;color:var(--text-muted);padding:8px 12px;cursor:pointer;font-size:0.8rem;">👤 Author</button>
   </button>
   <div class="count-badge" id="countBadge">Loading…</div>
 </div>
@@ -147,6 +167,23 @@
   <label>Filter by author:</label>
   <input type="text" id="authorInput" placeholder="e.g. ChristianWallis" oninput="onFilter()">
   <div class="popular-authors" id="popularAuthors"></div>
+</div>
+
+<!-- Semantic search controls -->
+<div class="semantic-bar" id="semanticBar">
+  <div class="semantic-row">
+    <input type="text" id="semanticInput" placeholder="Describe a story… e.g. 'a babysitter hears noises upstairs'" onkeydown="if(event.key==='Enter')runSemantic()">
+    <button class="btn-search" id="semanticBtn" onclick="runSemantic()">Search</button>
+  </div>
+  <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+    <span class="model-status loading" id="modelStatus">⏳ Loading AI model… (first load ~30s, then cached)</span>
+    <select id="semanticLen" style="font-size:0.8rem;">
+      <option value="0">Any length</option>
+      <option value="1000">Medium (1k+ words)</option>
+      <option value="2000" selected>Long (2k+ words)</option>
+      <option value="5000">Epic (5k+ words)</option>
+    </select>
+  </div>
 </div>
 
 <main>
@@ -164,55 +201,132 @@
   </div>
 </main>
 
-<script>
+<script type="module">
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js';
+
+env.allowLocalModels = false;
+
 let allStories = [];
+let embeddings = null; // Float32Array, shape [N, DIM]
 let filtered = [];
 let sortMode = 'score';
 let page = 0;
+let mode = 'browse';
+let embedder = null;
+let modelReady = false;
 const PAGE_SIZE = 30;
+const DIM = 384;
 
+// --- Init ---
 async function init() {
-  const r = await fetch('data/stories.json');
-  allStories = await r.json();
+  const [storiesRes] = await Promise.all([fetch('data/stories.json')]);
+  allStories = await storiesRes.json();
   document.getElementById('loading').style.display = 'none';
   buildPopularAuthors();
   onFilter();
+  loadEmbeddings();
+  loadModel();
 }
 
-function buildPopularAuthors() {
-  const counts = {};
-  allStories.forEach(s => { counts[s.author] = (counts[s.author]||0) + 1; });
-  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
-  // Always include ChristianWallis if present
-  const featured = ['ChristianWallis', ...top.filter(a=>a!=='ChristianWallis')].slice(0,8);
-  const container = document.getElementById('popularAuthors');
-  featured.forEach(author => {
-    if (!allStories.find(s=>s.author===author)) return;
-    const chip = document.createElement('span');
-    chip.className = 'author-chip';
-    chip.textContent = author;
-    chip.onclick = () => {
-      document.getElementById('authorInput').value = author;
-      document.querySelectorAll('.author-chip').forEach(c=>c.classList.remove('active'));
-      chip.classList.add('active');
-      onFilter();
-    };
-    container.appendChild(chip);
+async function loadEmbeddings() {
+  const res = await fetch('data/embeddings.bin');
+  const buf = await res.arrayBuffer();
+  embeddings = new Float32Array(buf);
+}
+
+async function loadModel() {
+  try {
+    embedder = await pipeline('feature-extraction', 'Xenova/bge-small-en-v1.5', {
+      quantized: true,
+    });
+    modelReady = true;
+    const el = document.getElementById('modelStatus');
+    el.textContent = '✅ AI model ready';
+    el.className = 'model-status ready';
+    document.getElementById('semanticBtn').disabled = false;
+  } catch(e) {
+    const el = document.getElementById('modelStatus');
+    el.textContent = '❌ Model failed to load';
+    el.className = 'model-status error';
+  }
+}
+
+// --- Mode switching ---
+window.setMode = function(m) {
+  mode = m;
+  document.getElementById('tab-browse').classList.toggle('active', m === 'browse');
+  document.getElementById('tab-semantic').classList.toggle('active', m === 'semantic');
+  document.getElementById('browseControls').style.display = m === 'browse' ? '' : 'none';
+  document.getElementById('authorBar').style.display = m === 'browse' ? '' : 'none';
+  document.getElementById('semanticBar').classList.toggle('show', m === 'semantic');
+  if (m === 'browse') {
+    document.getElementById('authorBar').className = 'author-bar' + (authorBarOpen ? ' show' : '');
+    onFilter();
+  } else {
+    document.getElementById('storyList').innerHTML = '';
+    document.getElementById('countBadge').textContent = '';
+    document.getElementById('loadMore').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'none';
+  }
+};
+
+// --- Semantic search ---
+window.runSemantic = async function() {
+  if (!modelReady) { alert('AI model still loading, please wait…'); return; }
+  if (!embeddings) { alert('Embeddings still loading…'); return; }
+  const query = document.getElementById('semanticInput').value.trim();
+  if (!query) return;
+  const minWords = parseInt(document.getElementById('semanticLen').value) || 0;
+
+  const btn = document.getElementById('semanticBtn');
+  btn.disabled = true;
+  btn.textContent = 'Searching…';
+
+  const out = await embedder(query, { pooling: 'mean', normalize: true });
+  const qVec = out.data;
+
+  // Cosine similarity (embeddings already normalized)
+  const scores = [];
+  const n = allStories.length;
+  for (let i = 0; i < n; i++) {
+    if (minWords && allStories[i].word_count < minWords) continue;
+    let dot = 0;
+    const offset = i * DIM;
+    for (let d = 0; d < DIM; d++) dot += qVec[d] * embeddings[offset + d];
+    scores.push({ idx: i, sim: dot });
+  }
+  scores.sort((a, b) => b.sim - a.sim);
+  const top = scores.slice(0, 50);
+
+  document.getElementById('storyList').innerHTML = '';
+  document.getElementById('emptyState').style.display = top.length ? 'none' : 'block';
+  document.getElementById('countBadge').textContent = `Top ${top.length} matches`;
+  document.getElementById('loadMore').style.display = 'none';
+
+  top.forEach(({ idx, sim }) => {
+    const s = allStories[idx];
+    document.getElementById('storyList').appendChild(makeCard(s, sim));
   });
-}
 
-function setSort(mode, btn) {
-  sortMode = mode;
-  document.querySelectorAll('.pill-group button').forEach(b=>b.classList.remove('active'));
+  btn.disabled = false;
+  btn.textContent = 'Search';
+};
+
+// --- Browse ---
+window.setSort = function(m, btn) {
+  sortMode = m;
+  document.querySelectorAll('.pill-group button').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   onFilter();
-}
+};
 
-function toggleAuthorBar() {
-  document.getElementById('authorBar').classList.toggle('show');
-}
+let authorBarOpen = false;
+window.toggleAuthorBar = function() {
+  authorBarOpen = !authorBarOpen;
+  document.getElementById('authorBar').classList.toggle('show', authorBarOpen);
+};
 
-function onFilter() {
+window.onFilter = function() {
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
   const author = document.getElementById('authorInput').value.trim().toLowerCase();
   const minWords = parseInt(document.getElementById('lenFilter').value) || 0;
@@ -224,42 +338,39 @@ function onFilter() {
     return true;
   });
 
-  if (sortMode === 'score') {
-    filtered.sort((a,b) => b.score - a.score);
-  } else {
-    filtered.sort((a,b) => b.created_utc - a.created_utc);
-  }
+  if (sortMode === 'score') filtered.sort((a, b) => b.score - a.score);
+  else filtered.sort((a, b) => b.created_utc - a.created_utc);
 
   page = 0;
   document.getElementById('storyList').innerHTML = '';
   document.getElementById('countBadge').textContent = `${filtered.length.toLocaleString()} stories`;
   document.getElementById('emptyState').style.display = filtered.length ? 'none' : 'block';
   renderPage();
-}
+};
+
+window.showMore = function() { renderPage(); };
 
 function renderPage() {
   const list = document.getElementById('storyList');
   const slice = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-  slice.forEach(s => list.appendChild(makeCard(s)));
+  slice.forEach(s => list.appendChild(makeCard(s, null)));
   page++;
-  const loadMore = document.getElementById('loadMore');
-  loadMore.style.display = page * PAGE_SIZE < filtered.length ? 'block' : 'none';
+  document.getElementById('loadMore').style.display = page * PAGE_SIZE < filtered.length ? 'block' : 'none';
 }
 
-function showMore() { renderPage(); }
-
-function makeCard(s) {
+// --- Card ---
+function makeCard(s, sim) {
   const card = document.createElement('div');
   card.className = 'card';
-  const date = new Date(s.created_utc * 1000).toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'});
-  const wc = s.word_count >= 1000 ? (s.word_count/1000).toFixed(1)+'k' : s.word_count;
+  const date = new Date(s.created_utc * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  const wc = s.word_count >= 1000 ? (s.word_count / 1000).toFixed(1) + 'k' : s.word_count;
+  const scoreHtml = sim !== null
+    ? `<div class="sim-box"><div class="sim">${Math.round(sim * 100)}%</div><div class="sim-label">match</div></div>`
+    : `<div class="score-box"><div class="score">${s.score}</div><div class="score-label">points</div></div>`;
 
   card.innerHTML = `
     <div class="card-header" onclick="toggleCard(this)">
-      <div class="score-box">
-        <div class="score">${s.score}</div>
-        <div class="score-label">points</div>
-      </div>
+      ${scoreHtml}
       <div class="card-meta">
         <div class="card-title">${escHtml(s.title)}</div>
         <div class="card-info">
@@ -282,26 +393,47 @@ function makeCard(s) {
   return card;
 }
 
-function toggleCard(header) {
-  const card = header.closest('.card');
-  card.classList.toggle('open');
-}
+window.toggleCard = function(header) {
+  header.closest('.card').classList.toggle('open');
+};
 
-function filterByAuthor(author, e) {
+window.filterByAuthor = function(author, e) {
   e.stopPropagation();
+  setMode('browse');
   document.getElementById('authorInput').value = author;
+  authorBarOpen = true;
   document.getElementById('authorBar').classList.add('show');
-  document.querySelectorAll('.author-chip').forEach(c => {
-    c.classList.toggle('active', c.textContent === author);
-  });
+  document.querySelectorAll('.author-chip').forEach(c => c.classList.toggle('active', c.textContent === author));
   onFilter();
-  window.scrollTo({top:0, behavior:'smooth'});
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+function buildPopularAuthors() {
+  const counts = {};
+  allStories.forEach(s => { counts[s.author] = (counts[s.author] || 0) + 1; });
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8).map(e => e[0]);
+  const featured = ['ChristianWallis', ...top.filter(a => a !== 'ChristianWallis')].slice(0, 8);
+  const container = document.getElementById('popularAuthors');
+  featured.forEach(author => {
+    if (!allStories.find(s => s.author === author)) return;
+    const chip = document.createElement('span');
+    chip.className = 'author-chip';
+    chip.textContent = author;
+    chip.onclick = () => {
+      document.getElementById('authorInput').value = author;
+      document.querySelectorAll('.author-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      onFilter();
+    };
+    container.appendChild(chip);
+  });
 }
 
 function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+document.getElementById('semanticBtn').disabled = true;
 init();
 </script>
 </body>
