@@ -5,162 +5,234 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tales From The Creeps</title>
 <style>
-  :root {
-    --bg: #0a0d12;
-    --surface: #111520;
-    --surface2: #1a1f2e;
-    --border: #2a2f42;
-    --accent: #c0392b;
-    --accent2: #e74c3c;
-    --text: #e0e0e0;
-    --text-muted: #7a8099;
-    --text-dim: #4a5068;
-    --gold: #f39c12;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Georgia', serif; min-height: 100vh; }
+:root {
+  --bg: #0a0d12;
+  --surface: #111520;
+  --surface2: #1a1f2e;
+  --border: #2a2f42;
+  --accent: #c0392b;
+  --accent2: #e74c3c;
+  --text: #e0e0e0;
+  --muted: #7a8099;
+  --dim: #4a5068;
+  --gold: #f39c12;
+  --green: #27ae60;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: Georgia, serif; min-height: 100vh; }
 
-  header { background: var(--surface); border-bottom: 2px solid var(--accent); padding: 18px 24px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; }
-  header h1 { font-size: 1.5rem; letter-spacing: 1px; color: #fff; }
-  header h1 span { color: var(--accent2); }
-  .header-sub { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; margin-top: 2px; }
-  .skull { font-size: 1.8rem; }
+header {
+  background: var(--surface); border-bottom: 2px solid var(--accent);
+  padding: 18px 24px; display: flex; align-items: center; gap: 14px;
+  position: sticky; top: 0; z-index: 100;
+}
+header h1 { font-size: 1.4rem; letter-spacing: 1px; color: #fff; }
+header h1 span { color: var(--accent2); }
+.header-sub { font-size: 0.72rem; color: var(--muted); font-family: monospace; margin-top: 2px; }
 
-  /* Mode tabs */
-  .mode-tabs { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; }
-  .mode-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); border-bottom: 2px solid transparent; transition: all 0.15s; user-select: none; }
-  .mode-tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
-  .mode-tab:hover:not(.active) { color: var(--text); }
+.mode-tabs { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; }
+.mode-tab {
+  flex: 1; padding: 11px; text-align: center; cursor: pointer;
+  font-size: 0.85rem; color: var(--muted); border-bottom: 2px solid transparent;
+  transition: all 0.15s; user-select: none;
+}
+.mode-tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
+.mode-tab:hover:not(.active) { color: var(--text); }
 
-  /* Controls */
-  .controls { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-  .search-wrap { flex: 1; min-width: 200px; position: relative; }
-  .search-wrap input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px 8px 36px; color: var(--text); font-size: 0.9rem; outline: none; }
-  .search-wrap input:focus { border-color: var(--accent); }
-  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; pointer-events: none; }
-  select { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-size: 0.85rem; cursor: pointer; outline: none; }
-  select:focus { border-color: var(--accent); }
-  .pill-group { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-  .pill-group button { background: none; border: none; color: var(--text-muted); padding: 8px 12px; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; white-space: nowrap; }
-  .pill-group button.active { background: var(--accent); color: #fff; }
-  .pill-group button:hover:not(.active) { background: var(--border); color: var(--text); }
-  .count-badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; }
+/* ── Finder panel ── */
+.finder-panel { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; flex-direction: column; gap: 12px; }
+.finder-panel.hidden { display: none; }
+.finder-label { font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; font-family: monospace; letter-spacing: 0.5px; }
+#episodeSelect {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 12px; color: var(--text); font-size: 0.9rem;
+  outline: none; font-family: Georgia, serif; cursor: pointer;
+}
+#episodeSelect:focus { border-color: var(--accent); }
+.finder-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.finder-row select {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px 10px; color: var(--text); font-size: 0.85rem; outline: none; cursor: pointer;
+}
+.finder-row select:focus { border-color: var(--accent); }
+#findBtn {
+  background: var(--accent); color: #fff; border: none; border-radius: 6px;
+  padding: 9px 24px; cursor: pointer; font-size: 0.9rem; font-family: Georgia, serif;
+  transition: background 0.15s;
+}
+#findBtn:hover { background: var(--accent2); }
+#findBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  /* Semantic search bar */
-  .semantic-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: none; flex-direction: column; gap: 10px; }
-  .semantic-bar.show { display: flex; }
-  .semantic-row { display: flex; gap: 10px; align-items: center; }
-  .semantic-row input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; color: var(--text); font-size: 0.95rem; outline: none; font-family: Georgia, serif; }
-  .semantic-row input:focus { border-color: var(--accent); }
-  .btn-search { background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 10px 20px; cursor: pointer; font-size: 0.9rem; white-space: nowrap; transition: background 0.15s; }
-  .btn-search:hover { background: var(--accent2); }
-  .btn-search:disabled { opacity: 0.5; cursor: not-allowed; }
-  .model-status { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; }
-  .model-status.ready { color: #27ae60; }
-  .model-status.loading { color: var(--gold); }
-  .model-status.error { color: var(--accent2); }
+/* ── Browse panel ── */
+.browse-panel { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.browse-panel.hidden { display: none; }
+.search-wrap { flex: 1; min-width: 180px; position: relative; }
+.search-wrap input {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 8px 12px 8px 34px; color: var(--text);
+  font-size: 0.9rem; outline: none;
+}
+.search-wrap input:focus { border-color: var(--accent); }
+.search-wrap::before { content: '🔍'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; }
+.pill-group { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.pill-group button {
+  background: none; border: none; color: var(--muted); padding: 8px 12px;
+  cursor: pointer; font-size: 0.8rem; transition: all 0.15s; white-space: nowrap;
+}
+.pill-group button.active { background: var(--accent); color: #fff; }
+.pill-group button:hover:not(.active) { background: var(--border); color: var(--text); }
+select.ctrl {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px 10px; color: var(--text); font-size: 0.85rem; outline: none; cursor: pointer;
+}
+.count-badge {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px 12px; font-size: 0.8rem; color: var(--muted); white-space: nowrap; margin-left: auto;
+}
 
-  /* Author filter bar */
-  .author-bar { display: none; background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 24px; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .author-bar.show { display: flex; }
-  .author-bar label { font-size: 0.8rem; color: var(--text-muted); }
-  .author-bar input { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; color: var(--text); font-size: 0.85rem; outline: none; width: 200px; }
-  .author-bar input:focus { border-color: var(--accent); }
-  .popular-authors { display: flex; gap: 6px; flex-wrap: wrap; }
-  .author-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer; color: var(--text-muted); transition: all 0.15s; }
-  .author-chip:hover, .author-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* Author bar */
+.author-bar { display: none; background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 24px; gap: 8px; align-items: center; flex-wrap: wrap; }
+.author-bar.show { display: flex; }
+.author-bar label { font-size: 0.8rem; color: var(--muted); }
+.author-bar input {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 6px 10px; color: var(--text); font-size: 0.85rem; outline: none; width: 200px;
+}
+.author-bar input:focus { border-color: var(--accent); }
+.popular-authors { display: flex; gap: 6px; flex-wrap: wrap; }
+.author-chip {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 20px;
+  padding: 4px 10px; font-size: 0.75rem; cursor: pointer; color: var(--muted); transition: all 0.15s;
+}
+.author-chip:hover, .author-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-  /* Story list */
-  main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
-  .story-list { display: flex; flex-direction: column; gap: 12px; }
+main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+.story-list { display: flex; flex-direction: column; gap: 12px; }
 
-  /* Card */
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
-  .card:hover { border-color: var(--accent); }
-  .card-header { padding: 14px 16px; cursor: pointer; display: flex; gap: 14px; align-items: flex-start; }
-  .score-box { background: var(--surface2); border-radius: 6px; padding: 6px 10px; text-align: center; min-width: 52px; flex-shrink: 0; }
-  .score-box .score { font-size: 1.1rem; font-weight: bold; color: var(--gold); line-height: 1; }
-  .score-box .score-label { font-size: 0.65rem; color: var(--text-dim); margin-top: 2px; }
-  .sim-box { background: var(--surface2); border-radius: 6px; padding: 6px 10px; text-align: center; min-width: 52px; flex-shrink: 0; }
-  .sim-box .sim { font-size: 1.1rem; font-weight: bold; color: #27ae60; line-height: 1; }
-  .sim-box .sim-label { font-size: 0.65rem; color: var(--text-dim); margin-top: 2px; }
-  .card-meta { flex: 1; min-width: 0; }
-  .card-title { font-size: 1rem; color: #fff; line-height: 1.4; margin-bottom: 6px; }
-  .card-info { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.75rem; color: var(--text-muted); font-family: monospace; }
-  .card-info .author { color: var(--accent2); cursor: pointer; }
-  .card-info .author:hover { text-decoration: underline; }
-  .flair-tag { background: var(--surface2); border-radius: 3px; padding: 1px 6px; font-size: 0.7rem; color: var(--text-muted); }
-  .expand-icon { color: var(--text-dim); font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; transition: transform 0.2s; }
-  .card.open .expand-icon { transform: rotate(180deg); }
-  .story-body { display: none; padding: 0 16px 16px; border-top: 1px solid var(--border); }
-  .card.open .story-body { display: block; }
-  .story-text { margin-top: 16px; font-size: 0.95rem; line-height: 1.8; color: #ccc; white-space: pre-wrap; word-break: break-word; max-height: 60vh; overflow-y: auto; padding-right: 8px; }
-  .story-text::-webkit-scrollbar { width: 4px; }
-  .story-text::-webkit-scrollbar-track { background: var(--surface2); }
-  .story-text::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-  .story-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-  .btn { padding: 6px 14px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; }
-  .btn-reddit { background: #ff4500; color: #fff; text-decoration: none; display: inline-block; line-height: 1.8; }
-  .btn-reddit:hover { background: #e03d00; }
-  .btn-author { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn-author:hover { border-color: var(--accent); color: var(--accent2); }
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
+.card:hover { border-color: var(--accent); }
+.card-header { padding: 14px 16px; cursor: pointer; display: flex; gap: 14px; align-items: flex-start; }
+.score-box { background: var(--surface2); border-radius: 6px; padding: 6px 10px; text-align: center; min-width: 54px; flex-shrink: 0; }
+.score-box .num { font-size: 1.1rem; font-weight: bold; line-height: 1; }
+.score-box .lbl { font-size: 0.62rem; color: var(--dim); margin-top: 2px; }
+.gold { color: var(--gold); }
+.green { color: var(--green); }
+.card-meta { flex: 1; min-width: 0; }
+.card-title { font-size: 1rem; color: #fff; line-height: 1.4; margin-bottom: 6px; }
+.card-info { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.75rem; color: var(--muted); font-family: monospace; }
+.card-info .author { color: var(--accent2); cursor: pointer; }
+.card-info .author:hover { text-decoration: underline; }
+.flair-tag { background: var(--surface2); border-radius: 3px; padding: 1px 6px; font-size: 0.7rem; }
+.chevron { color: var(--dim); font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; transition: transform 0.2s; }
+.card.open .chevron { transform: rotate(180deg); }
 
-  .loading { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-  .spinner { font-size: 2rem; animation: spin 1s linear infinite; display: inline-block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-  .empty .icon { font-size: 3rem; margin-bottom: 12px; }
-  .load-more { text-align: center; margin-top: 24px; }
-  .load-more button { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px 28px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
-  .load-more button:hover { border-color: var(--accent); color: var(--accent2); }
+.story-body { display: none; padding: 0 16px 16px; border-top: 1px solid var(--border); }
+.card.open .story-body { display: block; }
+.story-text {
+  margin-top: 14px; font-size: 0.93rem; line-height: 1.85; color: #ccc;
+  white-space: pre-wrap; word-break: break-word; max-height: 65vh; overflow-y: auto; padding-right: 6px;
+}
+.story-text::-webkit-scrollbar { width: 4px; }
+.story-text::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.story-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.btn { padding: 6px 14px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; font-family: Georgia, serif; }
+.btn-reddit { background: #ff4500; color: #fff; text-decoration: none; display: inline-flex; align-items: center; }
+.btn-reddit:hover { background: #e03d00; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent2); }
 
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.state-msg { text-align: center; padding: 56px 20px; color: var(--muted); }
+.state-msg .icon { font-size: 2.8rem; margin-bottom: 12px; }
+.state-msg p { font-size: 0.9rem; }
 
-  @media (max-width: 600px) {
-    header { padding: 14px 16px; }
-    .controls, .semantic-bar { padding: 10px 16px; }
-    .card-header { gap: 10px; }
-    .score-box, .sim-box { min-width: 44px; padding: 4px 6px; }
-  }
+.load-more { text-align: center; margin-top: 24px; }
+.load-more button {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  padding: 10px 28px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+  font-family: Georgia, serif; transition: all 0.2s;
+}
+.load-more button:hover { border-color: var(--accent); color: var(--accent2); }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+@media (max-width: 600px) {
+  header { padding: 12px 16px; }
+  .finder-panel, .browse-panel { padding: 10px 16px; }
+  .card-header { gap: 10px; }
+  .score-box { min-width: 44px; padding: 4px 6px; }
+}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="skull">💀</div>
+  <div style="font-size:1.8rem">💀</div>
   <div>
     <h1>Tales From <span>The Creeps</span></h1>
-    <div class="header-sub">r/TalesFromTheCreeps story browser</div>
+    <div class="header-sub">r/TalesFromTheCreeps · story finder</div>
   </div>
 </header>
 
 <div class="mode-tabs">
-  <div class="mode-tab active" id="tab-browse" onclick="setMode('browse')">📚 Browse</div>
-  <div class="mode-tab" id="tab-semantic" onclick="setMode('semantic')">🔮 Semantic Search</div>
+  <div class="mode-tab active" id="tab-finder" onclick="setMode('finder')">🎙️ Episode Finder</div>
+  <div class="mode-tab" id="tab-browse" onclick="setMode('browse')">📚 Browse</div>
 </div>
 
-<!-- Browse controls -->
-<div class="controls" id="browseControls">
+<!-- Episode Finder -->
+<div class="finder-panel" id="finderPanel">
+  <div>
+    <div class="finder-label">SELECT A CREEPCAST EPISODE</div>
+    <select id="episodeSelect">
+      <option value="">Loading episodes…</option>
+    </select>
+  </div>
+  <div class="finder-row">
+    <div>
+      <div class="finder-label">MINIMUM STORY LENGTH</div>
+      <select id="finderLen">
+        <option value="0">Any length</option>
+        <option value="1000">Medium (1k+ words)</option>
+        <option value="2000" selected>Long (2k+ words)</option>
+        <option value="5000">Epic (5k+ words)</option>
+      </select>
+    </div>
+    <div>
+      <div class="finder-label">RESULTS</div>
+      <select id="finderCount">
+        <option value="10">10</option>
+        <option value="20" selected>20</option>
+        <option value="50">50</option>
+      </select>
+    </div>
+    <div style="margin-top:20px">
+      <button id="findBtn" onclick="runFinder()" disabled>Find Stories</button>
+    </div>
+    <div class="count-badge" id="countBadge" style="margin-top:20px"></div>
+  </div>
+</div>
+
+<!-- Browse -->
+<div class="browse-panel hidden" id="browsePanel">
   <div class="search-wrap">
-    <span class="search-icon">🔍</span>
     <input type="text" id="searchInput" placeholder="Search titles…" oninput="onFilter()">
   </div>
   <div class="pill-group">
     <button class="active" onclick="setSort('score',this)">⭐ Top Rated</button>
     <button onclick="setSort('recent',this)">🕐 Recent</button>
   </div>
-  <select id="lenFilter" onchange="onFilter()">
+  <select class="ctrl" id="browseLen" onchange="onFilter()">
     <option value="0">Any length</option>
     <option value="1000">Medium (1k+ words)</option>
     <option value="2000" selected>Long (2k+ words)</option>
     <option value="5000">Epic (5k+ words)</option>
   </select>
-  <button class="pill-group" style="border:1px solid var(--border);border-radius:6px;" onclick="toggleAuthorBar()">
-    <button style="background:none;border:none;color:var(--text-muted);padding:8px 12px;cursor:pointer;font-size:0.8rem;">👤 Author</button>
+  <button class="pill-group" style="border:1px solid var(--border);border-radius:6px;padding:0;" onclick="toggleAuthorBar()">
+    <button style="background:none;border:none;color:var(--muted);padding:8px 12px;cursor:pointer;font-size:0.8rem;">👤 Author</button>
   </button>
-  <div class="count-badge" id="countBadge">Loading…</div>
+  <div class="count-badge" id="browseCount">Loading…</div>
 </div>
 
 <div class="author-bar" id="authorBar">
@@ -169,235 +241,128 @@
   <div class="popular-authors" id="popularAuthors"></div>
 </div>
 
-<!-- Semantic search controls -->
-<div class="semantic-bar" id="semanticBar">
-  <div class="semantic-row">
-    <input type="text" id="semanticInput" placeholder="Describe a story… e.g. 'a babysitter hears noises upstairs'" onkeydown="if(event.key==='Enter')runSemantic()">
-    <button class="btn-search" id="semanticBtn" onclick="runSemantic()">Search</button>
-  </div>
-  <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-    <span class="model-status loading" id="modelStatus">⏳ Loading AI model… (first load ~30s, then cached)</span>
-    <select id="semanticLen" style="font-size:0.8rem;">
-      <option value="0">Any length</option>
-      <option value="1000">Medium (1k+ words)</option>
-      <option value="2000" selected>Long (2k+ words)</option>
-      <option value="5000">Epic (5k+ words)</option>
-    </select>
-  </div>
-</div>
-
 <main>
-  <div class="loading" id="loading">
-    <div class="spinner">💀</div>
-    <p style="margin-top:16px">Loading stories…</p>
+  <div class="state-msg" id="stateMsg">
+    <div class="icon">🎙️</div>
+    <p>Select a CreepCast episode above to find matching stories.</p>
   </div>
   <div class="story-list" id="storyList"></div>
-  <div class="empty" id="emptyState" style="display:none">
-    <div class="icon">🕯️</div>
-    <p>No stories found. Try adjusting your filters.</p>
-  </div>
   <div class="load-more" id="loadMore" style="display:none">
-    <button onclick="showMore()">Load more stories</button>
+    <button onclick="showMore()">Load more</button>
   </div>
 </main>
 
-<script type="module">
-import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js';
-
-env.allowLocalModels = false;
-
-let allStories = [];
-let embeddings = null; // Float32Array, shape [N, DIM]
+<script>
+let stories = [];
+let storyEmbs = null;   // Float32Array [N x 384]
+let episodeEmbs = null; // Float32Array [M x 384]
+let episodes = [];
 let filtered = [];
-let sortMode = 'score';
-let page = 0;
-let mode = 'browse';
-let embedder = null;
-let modelReady = false;
-const PAGE_SIZE = 30;
+let browseSort = 'score';
+let browsePage = 0;
+let authorBarOpen = false;
+let currentMode = 'finder';
 const DIM = 384;
+const PAGE = 30;
 
-// --- Init ---
-async function init() {
-  const [storiesRes] = await Promise.all([fetch('data/stories.json')]);
-  allStories = await storiesRes.json();
-  document.getElementById('loading').style.display = 'none';
-  buildPopularAuthors();
+async function loadAll() {
+  const [sRes, eRes, seRes, eeRes] = await Promise.all([
+    fetch('data/stories.json'),
+    fetch('data/episodes.json'),
+    fetch('data/embeddings.bin'),
+    fetch('data/episode_embeddings.bin'),
+  ]);
+  stories    = await sRes.json();
+  episodes   = await eRes.json();
+  storyEmbs  = new Float32Array(await seRes.arrayBuffer());
+  episodeEmbs= new Float32Array(await eeRes.arrayBuffer());
+
+  populateEpisodes();
+  buildAuthorChips();
+  document.getElementById('findBtn').disabled = false;
+  document.getElementById('browseCount').textContent = stories.length.toLocaleString() + ' stories';
   onFilter();
-  loadEmbeddings();
-  loadModel();
 }
 
-async function loadEmbeddings() {
-  const res = await fetch('data/embeddings.bin');
-  const buf = await res.arrayBuffer();
-  embeddings = new Float32Array(buf);
+function populateEpisodes() {
+  const sel = document.getElementById('episodeSelect');
+  sel.innerHTML = '<option value="">— choose an episode —</option>';
+  episodes.forEach((ep, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = ep.title || `Episode ${i+1}`;
+    sel.appendChild(opt);
+  });
 }
 
-async function loadModel() {
-  try {
-    embedder = await pipeline('feature-extraction', 'Xenova/bge-small-en-v1.5', {
-      quantized: true,
-    });
-    modelReady = true;
-    const el = document.getElementById('modelStatus');
-    el.textContent = '✅ AI model ready';
-    el.className = 'model-status ready';
-    document.getElementById('semanticBtn').disabled = false;
-  } catch(e) {
-    const el = document.getElementById('modelStatus');
-    el.textContent = '❌ Model failed to load';
-    el.className = 'model-status error';
-  }
-}
+// ── Finder ──
+function runFinder() {
+  const idx = parseInt(document.getElementById('episodeSelect').value);
+  if (isNaN(idx)) { alert('Please select an episode first.'); return; }
+  const minWords = parseInt(document.getElementById('finderLen').value) || 0;
+  const topN = parseInt(document.getElementById('finderCount').value) || 20;
 
-// --- Mode switching ---
-window.setMode = function(m) {
-  mode = m;
-  document.getElementById('tab-browse').classList.toggle('active', m === 'browse');
-  document.getElementById('tab-semantic').classList.toggle('active', m === 'semantic');
-  document.getElementById('browseControls').style.display = m === 'browse' ? '' : 'none';
-  document.getElementById('authorBar').style.display = m === 'browse' ? '' : 'none';
-  document.getElementById('semanticBar').classList.toggle('show', m === 'semantic');
-  if (m === 'browse') {
-    document.getElementById('authorBar').className = 'author-bar' + (authorBarOpen ? ' show' : '');
-    onFilter();
-  } else {
-    document.getElementById('storyList').innerHTML = '';
-    document.getElementById('countBadge').textContent = '';
-    document.getElementById('loadMore').style.display = 'none';
-    document.getElementById('emptyState').style.display = 'none';
-  }
-};
+  const qVec = episodeEmbs.subarray(idx * DIM, (idx + 1) * DIM);
 
-// --- Semantic search ---
-window.runSemantic = async function() {
-  if (!modelReady) { alert('AI model still loading, please wait…'); return; }
-  if (!embeddings) { alert('Embeddings still loading…'); return; }
-  const query = document.getElementById('semanticInput').value.trim();
-  if (!query) return;
-  const minWords = parseInt(document.getElementById('semanticLen').value) || 0;
-
-  const btn = document.getElementById('semanticBtn');
-  btn.disabled = true;
-  btn.textContent = 'Searching…';
-
-  const out = await embedder(query, { pooling: 'mean', normalize: true });
-  const qVec = out.data;
-
-  // Cosine similarity (embeddings already normalized)
   const scores = [];
-  const n = allStories.length;
-  for (let i = 0; i < n; i++) {
-    if (minWords && allStories[i].word_count < minWords) continue;
+  for (let i = 0; i < stories.length; i++) {
+    if (minWords && stories[i].word_count < minWords) continue;
     let dot = 0;
-    const offset = i * DIM;
-    for (let d = 0; d < DIM; d++) dot += qVec[d] * embeddings[offset + d];
-    scores.push({ idx: i, sim: dot });
+    const off = i * DIM;
+    for (let d = 0; d < DIM; d++) dot += qVec[d] * storyEmbs[off + d];
+    scores.push({ i, sim: dot });
   }
   scores.sort((a, b) => b.sim - a.sim);
-  const top = scores.slice(0, 50);
+  const top = scores.slice(0, topN);
 
-  document.getElementById('storyList').innerHTML = '';
-  document.getElementById('emptyState').style.display = top.length ? 'none' : 'block';
-  document.getElementById('countBadge').textContent = `Top ${top.length} matches`;
-  document.getElementById('loadMore').style.display = 'none';
+  document.getElementById('countBadge').textContent = `${top.length} matches`;
+  renderCards(top.map(({ i, sim }) => ({ story: stories[i], sim })), true);
+}
 
-  top.forEach(({ idx, sim }) => {
-    const s = allStories[idx];
-    document.getElementById('storyList').appendChild(makeCard(s, sim));
-  });
-
-  btn.disabled = false;
-  btn.textContent = 'Search';
-};
-
-// --- Browse ---
-window.setSort = function(m, btn) {
-  sortMode = m;
-  document.querySelectorAll('.pill-group button').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  onFilter();
-};
-
-let authorBarOpen = false;
-window.toggleAuthorBar = function() {
-  authorBarOpen = !authorBarOpen;
-  document.getElementById('authorBar').classList.toggle('show', authorBarOpen);
-};
-
-window.onFilter = function() {
+// ── Browse ──
+function onFilter() {
+  if (currentMode !== 'browse') return;
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
   const author = document.getElementById('authorInput').value.trim().toLowerCase();
-  const minWords = parseInt(document.getElementById('lenFilter').value) || 0;
+  const minWords = parseInt(document.getElementById('browseLen').value) || 0;
 
-  filtered = allStories.filter(s => {
+  filtered = stories.filter(s => {
     if (minWords && s.word_count < minWords) return false;
     if (author && !s.author.toLowerCase().includes(author)) return false;
     if (q && !s.title.toLowerCase().includes(q)) return false;
     return true;
   });
 
-  if (sortMode === 'score') filtered.sort((a, b) => b.score - a.score);
+  if (browseSort === 'score') filtered.sort((a, b) => b.score - a.score);
   else filtered.sort((a, b) => b.created_utc - a.created_utc);
 
-  page = 0;
-  document.getElementById('storyList').innerHTML = '';
-  document.getElementById('countBadge').textContent = `${filtered.length.toLocaleString()} stories`;
-  document.getElementById('emptyState').style.display = filtered.length ? 'none' : 'block';
-  renderPage();
-};
-
-window.showMore = function() { renderPage(); };
-
-function renderPage() {
-  const list = document.getElementById('storyList');
-  const slice = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-  slice.forEach(s => list.appendChild(makeCard(s, null)));
-  page++;
-  document.getElementById('loadMore').style.display = page * PAGE_SIZE < filtered.length ? 'block' : 'none';
+  browsePage = 0;
+  document.getElementById('browseCount').textContent = filtered.length.toLocaleString() + ' stories';
+  renderCards(filtered.slice(0, PAGE).map(s => ({ story: s, sim: null })), false);
+  browsePage = 1;
+  document.getElementById('loadMore').style.display = filtered.length > PAGE ? 'block' : 'none';
 }
 
-// --- Card ---
-function makeCard(s, sim) {
-  const card = document.createElement('div');
-  card.className = 'card';
-  const date = new Date(s.created_utc * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  const wc = s.word_count >= 1000 ? (s.word_count / 1000).toFixed(1) + 'k' : s.word_count;
-  const scoreHtml = sim !== null
-    ? `<div class="sim-box"><div class="sim">${Math.round(sim * 100)}%</div><div class="sim-label">match</div></div>`
-    : `<div class="score-box"><div class="score">${s.score}</div><div class="score-label">points</div></div>`;
-
-  card.innerHTML = `
-    <div class="card-header" onclick="toggleCard(this)">
-      ${scoreHtml}
-      <div class="card-meta">
-        <div class="card-title">${escHtml(s.title)}</div>
-        <div class="card-info">
-          <span class="author" onclick="filterByAuthor('${escHtml(s.author)}',event)">u/${escHtml(s.author)}</span>
-          <span>📅 ${date}</span>
-          <span>📖 ${wc} words</span>
-          <span>💬 ${s.num_comments}</span>
-          ${s.flair ? `<span class="flair-tag">${escHtml(s.flair)}</span>` : ''}
-        </div>
-      </div>
-      <div class="expand-icon">▼</div>
-    </div>
-    <div class="story-body">
-      <div class="story-text">${escHtml(s.text)}</div>
-      <div class="story-actions">
-        <a href="${escHtml(s.url)}" target="_blank" class="btn btn-reddit">View on Reddit ↗</a>
-        <button class="btn btn-author" onclick="filterByAuthor('${escHtml(s.author)}',event)">More by u/${escHtml(s.author)}</button>
-      </div>
-    </div>`;
-  return card;
+function showMore() {
+  const slice = filtered.slice(browsePage * PAGE, (browsePage + 1) * PAGE);
+  slice.forEach(s => document.getElementById('storyList').appendChild(makeCard(s, null)));
+  browsePage++;
+  document.getElementById('loadMore').style.display = browsePage * PAGE < filtered.length ? 'block' : 'none';
 }
 
-window.toggleCard = function(header) {
-  header.closest('.card').classList.toggle('open');
-};
+function setSort(mode, btn) {
+  browseSort = mode;
+  document.querySelectorAll('.pill-group button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  onFilter();
+}
 
-window.filterByAuthor = function(author, e) {
+function toggleAuthorBar() {
+  authorBarOpen = !authorBarOpen;
+  document.getElementById('authorBar').classList.toggle('show', authorBarOpen);
+}
+
+function filterByAuthor(author, e) {
   e.stopPropagation();
   setMode('browse');
   document.getElementById('authorInput').value = author;
@@ -406,16 +371,16 @@ window.filterByAuthor = function(author, e) {
   document.querySelectorAll('.author-chip').forEach(c => c.classList.toggle('active', c.textContent === author));
   onFilter();
   window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+}
 
-function buildPopularAuthors() {
+function buildAuthorChips() {
   const counts = {};
-  allStories.forEach(s => { counts[s.author] = (counts[s.author] || 0) + 1; });
+  stories.forEach(s => { counts[s.author] = (counts[s.author] || 0) + 1; });
   const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8).map(e => e[0]);
   const featured = ['ChristianWallis', ...top.filter(a => a !== 'ChristianWallis')].slice(0, 8);
   const container = document.getElementById('popularAuthors');
   featured.forEach(author => {
-    if (!allStories.find(s => s.author === author)) return;
+    if (!stories.find(s => s.author === author)) return;
     const chip = document.createElement('span');
     chip.className = 'author-chip';
     chip.textContent = author;
@@ -429,12 +394,80 @@ function buildPopularAuthors() {
   });
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+// ── Mode switching ──
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('tab-finder').classList.toggle('active', mode === 'finder');
+  document.getElementById('tab-browse').classList.toggle('active', mode === 'browse');
+  document.getElementById('finderPanel').classList.toggle('hidden', mode !== 'finder');
+  document.getElementById('browsePanel').classList.toggle('hidden', mode !== 'browse');
+  document.getElementById('authorBar').classList.toggle('hidden', mode !== 'browse');
+
+  if (mode === 'finder') {
+    document.getElementById('stateMsg').style.display = 'block';
+    document.getElementById('stateMsg').innerHTML = '<div class="icon">🎙️</div><p>Select a CreepCast episode above to find matching stories.</p>';
+    document.getElementById('storyList').innerHTML = '';
+    document.getElementById('loadMore').style.display = 'none';
+    document.getElementById('countBadge').textContent = '';
+  } else {
+    document.getElementById('stateMsg').style.display = 'none';
+    if (filtered.length === 0) onFilter();
+  }
 }
 
-document.getElementById('semanticBtn').disabled = true;
-init();
+// ── Render ──
+function renderCards(items, isFinder) {
+  const list = document.getElementById('storyList');
+  list.innerHTML = '';
+  document.getElementById('stateMsg').style.display = items.length ? 'none' : 'block';
+  if (!items.length) {
+    document.getElementById('stateMsg').innerHTML = '<div class="icon">🕯️</div><p>No stories found. Try adjusting the filters.</p>';
+    return;
+  }
+  items.forEach(({ story, sim }) => list.appendChild(makeCard(story, sim)));
+  document.getElementById('loadMore').style.display = 'none';
+}
+
+function makeCard(s, sim) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  const date = new Date(s.created_utc * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  const wc = s.word_count >= 1000 ? (s.word_count / 1000).toFixed(1) + 'k' : s.word_count;
+
+  const scoreHtml = sim !== null
+    ? `<div class="score-box"><div class="num green">${Math.round(sim * 100)}%</div><div class="lbl">match</div></div>`
+    : `<div class="score-box"><div class="num gold">${s.score}</div><div class="lbl">points</div></div>`;
+
+  card.innerHTML = `
+    <div class="card-header" onclick="this.closest('.card').classList.toggle('open')">
+      ${scoreHtml}
+      <div class="card-meta">
+        <div class="card-title">${esc(s.title)}</div>
+        <div class="card-info">
+          <span class="author" onclick="filterByAuthor('${esc(s.author)}',event)">u/${esc(s.author)}</span>
+          <span>📅 ${date}</span>
+          <span>📖 ${wc} words</span>
+          <span>💬 ${s.num_comments}</span>
+          ${s.flair ? `<span class="flair-tag">${esc(s.flair)}</span>` : ''}
+        </div>
+      </div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="story-body">
+      <div class="story-text">${esc(s.text)}</div>
+      <div class="story-actions">
+        <a href="${esc(s.url)}" target="_blank" class="btn btn-reddit">View on Reddit ↗</a>
+        <button class="btn btn-secondary" onclick="filterByAuthor('${esc(s.author)}',event)">More by u/${esc(s.author)}</button>
+      </div>
+    </div>`;
+  return card;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+loadAll();
 </script>
 </body>
 </html>
