@@ -63,6 +63,36 @@ header h1 span { color: var(--accent2); }
 #findBtn:hover { background: var(--accent2); }
 #findBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+/* ── Authors panel ── */
+.authors-panel { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; gap: 10px; align-items: center; }
+.authors-panel.hidden { display: none; }
+.authors-panel .search-wrap { flex: 1; min-width: 160px; position: relative; }
+.authors-panel .search-wrap input {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 8px 12px 8px 34px; color: var(--text); font-size: 0.9rem; outline: none;
+}
+.authors-panel .search-wrap input:focus { border-color: var(--accent); }
+.authors-panel .search-wrap::before { content: '🔍'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; }
+
+.author-list { display: flex; flex-direction: column; gap: 10px; }
+.author-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
+.author-card:hover { border-color: var(--accent); }
+.author-card-header { padding: 14px 16px; cursor: pointer; display: flex; gap: 14px; align-items: center; }
+.author-avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; color: var(--accent2); flex-shrink: 0; }
+.author-avatar.has-stories { border-color: var(--accent); }
+.author-card-meta { flex: 1; min-width: 0; }
+.author-name { font-size: 1rem; color: #fff; font-weight: bold; margin-bottom: 5px; }
+.author-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.badge { font-size: 0.72rem; font-family: monospace; padding: 2px 8px; border-radius: 3px; }
+.badge-ep { background: rgba(192,57,43,0.2); color: var(--accent2); border: 1px solid rgba(192,57,43,0.4); }
+.badge-stories { background: rgba(39,174,96,0.15); color: var(--green); border: 1px solid rgba(39,174,96,0.3); }
+.badge-none { background: var(--surface2); color: var(--dim); border: 1px solid var(--border); }
+.episode-list { font-size: 0.75rem; color: var(--muted); margin-top: 5px; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.author-stories { display: none; border-top: 1px solid var(--border); }
+.author-card.open .author-stories { display: block; }
+.author-card.open .chevron { transform: rotate(180deg); }
+.no-stories-msg { padding: 20px 18px; color: var(--dim); font-size: 0.85rem; font-style: italic; }
+
 /* ── Browse panel ── */
 .browse-panel { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .browse-panel.hidden { display: none; }
@@ -179,6 +209,7 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
 <div class="mode-tabs">
   <div class="mode-tab active" id="tab-finder" onclick="setMode('finder')">🎙️ Episode Finder</div>
   <div class="mode-tab" id="tab-browse" onclick="setMode('browse')">📚 Browse</div>
+  <div class="mode-tab" id="tab-authors" onclick="setMode('authors')">👤 CC Authors</div>
 </div>
 
 <!-- Episode Finder -->
@@ -212,6 +243,14 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
     </div>
     <div class="count-badge" id="countBadge" style="margin-top:20px"></div>
   </div>
+</div>
+
+<!-- Authors -->
+<div class="authors-panel hidden" id="authorsPanel">
+  <div class="search-wrap">
+    <input type="text" id="authorSearch" placeholder="Search authors…" oninput="renderAuthors()">
+  </div>
+  <div class="count-badge" id="authorsCount"></div>
 </div>
 
 <!-- Browse -->
@@ -250,13 +289,15 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
   <div class="load-more" id="loadMore" style="display:none">
     <button onclick="showMore()">Load more</button>
   </div>
+  <div class="author-list" id="authorList" style="display:none"></div>
 </main>
 
 <script>
 let stories = [];
-let storyEmbs = null;   // Float32Array [N x 384]
-let episodeEmbs = null; // Float32Array [M x 384]
+let storyEmbs = null;
+let episodeEmbs = null;
 let episodes = [];
+let ccAuthors = {};      // { username: { episodes: [...], stories: [...] } }
 let filtered = [];
 let browseSort = 'score';
 let browsePage = 0;
@@ -266,21 +307,24 @@ const DIM = 384;
 const PAGE = 30;
 
 async function loadAll() {
-  const [sRes, eRes, seRes, eeRes] = await Promise.all([
+  const [sRes, eRes, seRes, eeRes, caRes] = await Promise.all([
     fetch('data/stories.json'),
     fetch('data/episodes.json'),
     fetch('data/embeddings.bin'),
     fetch('data/episode_embeddings.bin'),
+    fetch('data/cc_authors.json'),
   ]);
-  stories    = await sRes.json();
-  episodes   = await eRes.json();
-  storyEmbs  = new Float32Array(await seRes.arrayBuffer());
-  episodeEmbs= new Float32Array(await eeRes.arrayBuffer());
+  stories     = await sRes.json();
+  episodes    = await eRes.json();
+  storyEmbs   = new Float32Array(await seRes.arrayBuffer());
+  episodeEmbs = new Float32Array(await eeRes.arrayBuffer());
+  ccAuthors   = await caRes.json();
 
   populateEpisodes();
   buildAuthorChips();
   document.getElementById('findBtn').disabled = false;
   document.getElementById('browseCount').textContent = stories.length.toLocaleString() + ' stories';
+  document.getElementById('authorsCount').textContent = Object.keys(ccAuthors).length + ' authors';
   onFilter();
 }
 
@@ -299,47 +343,43 @@ function populateEpisodes() {
 function runFinder() {
   const idx = parseInt(document.getElementById('episodeSelect').value);
   if (isNaN(idx)) { alert('Please select an episode first.'); return; }
-  const minWords = parseInt(document.getElementById('finderLen').value) || 0;
-  const topN = parseInt(document.getElementById('finderCount').value) || 20;
-
-  const qVec = episodeEmbs.subarray(idx * DIM, (idx + 1) * DIM);
+  const minLen = parseInt(document.getElementById('finderLen').value) || 0;
+  const topN   = parseInt(document.getElementById('finderCount').value) || 20;
+  const qVec   = episodeEmbs.subarray(idx * DIM, (idx + 1) * DIM);
 
   const scores = [];
   for (let i = 0; i < stories.length; i++) {
-    if (minWords && stories[i].text.length < minWords) continue;
-    let dot = 0;
-    const off = i * DIM;
+    if (minLen && stories[i].text.length < minLen) continue;
+    let dot = 0, off = i * DIM;
     for (let d = 0; d < DIM; d++) dot += qVec[d] * storyEmbs[off + d];
     scores.push({ i, sim: dot });
   }
   scores.sort((a, b) => b.sim - a.sim);
   const top = scores.slice(0, topN);
-
   document.getElementById('countBadge').textContent = `${top.length} matches`;
-  renderCards(top.map(({ i, sim }) => ({ story: stories[i], sim })), true);
+  renderCards(top.map(({ i, sim }) => ({ story: stories[i], sim })));
 }
 
 // ── Browse ──
 function onFilter() {
   if (currentMode !== 'browse') return;
-  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const q      = document.getElementById('searchInput').value.trim().toLowerCase();
   const author = document.getElementById('authorInput').value.trim().toLowerCase();
-  const minWords = parseInt(document.getElementById('browseLen').value) || 0;
+  const minLen = parseInt(document.getElementById('browseLen').value) || 0;
 
   filtered = stories.filter(s => {
-    if (minWords && s.text.length < minWords) return false;
+    if (minLen && s.text.length < minLen) return false;
     if (author && !s.author.toLowerCase().includes(author)) return false;
     if (q && !s.title.toLowerCase().includes(q)) return false;
     return true;
   });
 
   if (browseSort === 'score') filtered.sort((a, b) => b.score - a.score);
-
   else filtered.sort((a, b) => b.created_utc - a.created_utc);
 
   browsePage = 0;
   document.getElementById('browseCount').textContent = filtered.length.toLocaleString() + ' stories';
-  renderCards(filtered.slice(0, PAGE).map(s => ({ story: s, sim: null })), false);
+  renderCards(filtered.slice(0, PAGE).map(s => ({ story: s, sim: null })));
   browsePage = 1;
   document.getElementById('loadMore').style.display = filtered.length > PAGE ? 'block' : 'none';
 }
@@ -395,29 +435,92 @@ function buildAuthorChips() {
   });
 }
 
+// ── Authors tab ──
+function renderAuthors() {
+  const q = (document.getElementById('authorSearch').value || '').trim().toLowerCase();
+  const list = document.getElementById('authorList');
+  list.innerHTML = '';
+
+  // Sort: most TFTC stories first, then most CC episodes
+  const sorted = Object.entries(ccAuthors).sort((a, b) => {
+    const diff = b[1].stories.length - a[1].stories.length;
+    return diff !== 0 ? diff : b[1].episodes.length - a[1].episodes.length;
+  });
+
+  const visible = q ? sorted.filter(([u]) => u.toLowerCase().includes(q)) : sorted;
+  document.getElementById('authorsCount').textContent = visible.length + ' of ' + sorted.length + ' authors';
+
+  visible.forEach(([username, data]) => {
+    list.appendChild(makeAuthorCard(username, data));
+  });
+}
+
+function makeAuthorCard(username, data) {
+  const hasStories = data.stories.length > 0;
+  const card = document.createElement('div');
+  card.className = 'author-card';
+  const episodeSample = data.episodes.slice(0, 3).join(', ') + (data.episodes.length > 3 ? '…' : '');
+
+  const storiesHtml = hasStories
+    ? data.stories.map(s => storyInnerHTML(s, null, false)).map(html => {
+        const d = document.createElement('div');
+        d.className = 'card';
+        d.style.cssText = 'margin:10px 16px;border-radius:6px;';
+        d.innerHTML = html;
+        return d.outerHTML;
+      }).join('')
+    : `<div class="no-stories-msg">This author posted their stories on other subreddits (like r/nosleep) rather than r/TalesFromTheCreeps.</div>`;
+
+  card.innerHTML = `
+    <div class="author-card-header" onclick="this.closest('.author-card').classList.toggle('open')">
+      <div class="author-avatar ${hasStories ? 'has-stories' : ''}">${esc(username[0].toUpperCase())}</div>
+      <div class="author-card-meta">
+        <div class="author-name">u/${esc(username)}</div>
+        <div class="author-badges">
+          <span class="badge badge-ep">🎙️ ${data.episodes.length} episode${data.episodes.length !== 1 ? 's' : ''}</span>
+          ${hasStories
+            ? `<span class="badge badge-stories">📖 ${data.stories.length} r/TFTC post${data.stories.length !== 1 ? 's' : ''}</span>`
+            : `<span class="badge badge-none">No r/TFTC posts</span>`}
+        </div>
+        <div class="episode-list">${esc(episodeSample)}</div>
+      </div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="author-stories">${storiesHtml}</div>`;
+  return card;
+}
+
 // ── Mode switching ──
 function setMode(mode) {
   currentMode = mode;
-  document.getElementById('tab-finder').classList.toggle('active', mode === 'finder');
-  document.getElementById('tab-browse').classList.toggle('active', mode === 'browse');
+  ['finder','browse','authors'].forEach(m => {
+    document.getElementById('tab-' + m).classList.toggle('active', mode === m);
+  });
   document.getElementById('finderPanel').classList.toggle('hidden', mode !== 'finder');
   document.getElementById('browsePanel').classList.toggle('hidden', mode !== 'browse');
+  document.getElementById('authorsPanel').classList.toggle('hidden', mode !== 'authors');
   document.getElementById('authorBar').classList.toggle('hidden', mode !== 'browse');
+
+  document.getElementById('storyList').style.display  = mode === 'authors' ? 'none' : '';
+  document.getElementById('loadMore').style.display   = mode === 'authors' ? 'none' : (mode === 'browse' && filtered.length > PAGE ? 'block' : 'none');
+  document.getElementById('authorList').style.display = mode === 'authors' ? '' : 'none';
 
   if (mode === 'finder') {
     document.getElementById('stateMsg').style.display = 'block';
     document.getElementById('stateMsg').innerHTML = '<div class="icon">🎙️</div><p>Select a CreepCast episode above to find matching stories.</p>';
     document.getElementById('storyList').innerHTML = '';
-    document.getElementById('loadMore').style.display = 'none';
     document.getElementById('countBadge').textContent = '';
-  } else {
+  } else if (mode === 'browse') {
     document.getElementById('stateMsg').style.display = 'none';
     if (filtered.length === 0) onFilter();
+  } else if (mode === 'authors') {
+    document.getElementById('stateMsg').style.display = 'none';
+    if (document.getElementById('authorList').children.length === 0) renderAuthors();
   }
 }
 
-// ── Render ──
-function renderCards(items, isFinder) {
+// ── Render (finder + browse) ──
+function renderCards(items) {
   const list = document.getElementById('storyList');
   list.innerHTML = '';
   document.getElementById('stateMsg').style.display = items.length ? 'none' : 'block';
@@ -432,20 +535,28 @@ function renderCards(items, isFinder) {
 function makeCard(s, sim) {
   const card = document.createElement('div');
   card.className = 'card';
+  card.innerHTML = storyInnerHTML(s, sim, true);
+  return card;
+}
+
+// Shared inner HTML for story cards.
+// withAuthor=true adds a clickable author span (browse/finder); false omits it (author tab).
+function storyInnerHTML(s, sim, withAuthor) {
   const date = new Date(s.created_utc * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   const wc = s.word_count >= 1000 ? (s.word_count / 1000).toFixed(1) + 'k' : s.word_count;
-
   const scoreHtml = sim !== null
     ? `<div class="score-box"><div class="num green">${Math.round(sim * 100)}%</div><div class="lbl">match</div></div>`
     : `<div class="score-box"><div class="num gold">${s.score}</div><div class="lbl">points</div></div>`;
-
-  card.innerHTML = `
+  const authorHtml = withAuthor
+    ? `<span class="author" onclick="filterByAuthor('${esc(s.author)}',event)">u/${esc(s.author)}</span>`
+    : '';
+  return `
     <div class="card-header" onclick="this.closest('.card').classList.toggle('open')">
       ${scoreHtml}
       <div class="card-meta">
         <div class="card-title">${esc(s.title)}</div>
         <div class="card-info">
-          <span class="author" onclick="filterByAuthor('${esc(s.author)}',event)">u/${esc(s.author)}</span>
+          ${authorHtml}
           <span>📅 ${date}</span>
           <span>📖 ${wc} words</span>
           <span>💬 ${s.num_comments}</span>
@@ -458,10 +569,9 @@ function makeCard(s, sim) {
       <div class="story-text">${esc(s.text)}</div>
       <div class="story-actions">
         <a href="${esc(s.url)}" target="_blank" class="btn btn-reddit">View on Reddit ↗</a>
-        <button class="btn btn-secondary" onclick="filterByAuthor('${esc(s.author)}',event)">More by u/${esc(s.author)}</button>
+        ${withAuthor ? `<button class="btn btn-secondary" onclick="filterByAuthor('${esc(s.author)}',event)">More by u/${esc(s.author)}</button>` : ''}
       </div>
     </div>`;
-  return card;
 }
 
 function esc(s) {
