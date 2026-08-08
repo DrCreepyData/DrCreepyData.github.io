@@ -24,7 +24,8 @@ def clean_post(p):
     return {
         "id":           p.get("id", ""),
         "title":        p.get("title", ""),
-        "selftext":     selftext[:4000],
+        "selftext":     selftext[:8000],
+        "word_count":   len(selftext.split()),   # actual full-text word count
         "score":        p.get("score", 0),
         "url":          f"https://www.reddit.com{permalink}",
         "flair":        (p.get("link_flair_text") or ""),
@@ -113,7 +114,7 @@ def main():
             "url":          p["url"],
             "flair":        p["flair"],
             "num_comments": p["num_comments"],
-            "word_count":   len(p["selftext"].split()),
+            "word_count":   p.get("word_count") or len(p["selftext"].split()),
             "text":         p["selftext"],
         }
 
