@@ -222,12 +222,23 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
   </div>
   <div class="finder-row">
     <div>
-      <div class="finder-label">MINIMUM STORY LENGTH</div>
+      <div class="finder-label">MIN WORDS</div>
       <select id="finderLen">
         <option value="0">Any length</option>
-        <option value="500">Medium (500+ words)</option>
-        <option value="1000" selected>Long (1000+ words)</option>
-        <option value="2000">Epic (2000+ words)</option>
+        <option value="500">500+ words</option>
+        <option value="1000" selected>1,000+ words</option>
+        <option value="2000">2,000+ words</option>
+        <option value="5000">5,000+ words</option>
+      </select>
+    </div>
+    <div>
+      <div class="finder-label">MIN UPVOTES</div>
+      <select id="finderScore">
+        <option value="0">Any score</option>
+        <option value="50">50+</option>
+        <option value="100">100+</option>
+        <option value="500">500+</option>
+        <option value="1000">1,000+</option>
       </select>
     </div>
     <div>
@@ -264,9 +275,17 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
   </div>
   <select class="ctrl" id="browseLen" onchange="onFilter()">
     <option value="0">Any length</option>
-    <option value="500">Medium (500+ words)</option>
-    <option value="1000" selected>Long (1000+ words)</option>
-    <option value="2000">Epic (2000+ words)</option>
+    <option value="500">500+ words</option>
+    <option value="1000" selected>1,000+ words</option>
+    <option value="2000">2,000+ words</option>
+    <option value="5000">5,000+ words</option>
+  </select>
+  <select class="ctrl" id="browseScore" onchange="onFilter()">
+    <option value="0">Any score</option>
+    <option value="50">50+ upvotes</option>
+    <option value="100">100+ upvotes</option>
+    <option value="500">500+ upvotes</option>
+    <option value="1000">1,000+ upvotes</option>
   </select>
   <button class="pill-group" style="border:1px solid var(--border);border-radius:6px;padding:0;" onclick="toggleAuthorBar()">
     <button style="background:none;border:none;color:var(--muted);padding:8px 12px;cursor:pointer;font-size:0.8rem;">👤 Author</button>
@@ -347,9 +366,11 @@ function runFinder() {
   const topN   = parseInt(document.getElementById('finderCount').value) || 20;
   const qVec   = episodeEmbs.subarray(idx * DIM, (idx + 1) * DIM);
 
+  const minScore = parseInt(document.getElementById('finderScore').value) || 0;
   const scores = [];
   for (let i = 0; i < stories.length; i++) {
     if (minLen && stories[i].word_count < minLen) continue;
+    if (minScore && stories[i].score < minScore) continue;
     let dot = 0, off = i * DIM;
     for (let d = 0; d < DIM; d++) dot += qVec[d] * storyEmbs[off + d];
     scores.push({ i, sim: dot });
@@ -367,8 +388,10 @@ function onFilter() {
   const author = document.getElementById('authorInput').value.trim().toLowerCase();
   const minLen = parseInt(document.getElementById('browseLen').value) || 0;
 
+  const minScore = parseInt(document.getElementById('browseScore').value) || 0;
   filtered = stories.filter(s => {
     if (minLen && s.word_count < minLen) return false;
+    if (minScore && s.score < minScore) return false;
     if (author && !s.author.toLowerCase().includes(author)) return false;
     if (q && !s.title.toLowerCase().includes(q)) return false;
     return true;
