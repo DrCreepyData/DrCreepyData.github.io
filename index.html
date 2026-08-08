@@ -216,7 +216,7 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
 <div class="finder-panel" id="finderPanel">
   <div>
     <div class="finder-label">SELECT A CREEPCAST EPISODE</div>
-    <select id="episodeSelect">
+    <select id="episodeSelect" onchange="if(this.value!=='')runFinder()">
       <option value="">Loading episodes…</option>
     </select>
   </div>
