@@ -320,7 +320,8 @@ let stories = [];
 let storyEmbs = null;
 let episodeEmbs = null;
 let episodes = [];
-let ccAuthors = {};      // { username: { episodes: [...], stories: [...] } }
+let ccAuthors = {};
+let epSourceStories = {};  // story_id -> source story object
 let filtered = [];
 let browseSort = 'score';
 let browsePage = 0;
@@ -330,18 +331,20 @@ const DIM = 384;
 const PAGE = 30;
 
 async function loadAll() {
-  const [sRes, eRes, seRes, eeRes, caRes] = await Promise.all([
+  const [sRes, eRes, seRes, eeRes, caRes, ssRes] = await Promise.all([
     fetch('data/stories.json'),
     fetch('data/episodes.json'),
     fetch('data/embeddings.bin'),
     fetch('data/episode_embeddings.bin'),
     fetch('data/cc_authors.json'),
+    fetch('data/episode_source_stories.json'),
   ]);
-  stories     = await sRes.json();
-  episodes    = await eRes.json();
-  storyEmbs   = new Float32Array(await seRes.arrayBuffer());
-  episodeEmbs = new Float32Array(await eeRes.arrayBuffer());
-  ccAuthors   = await caRes.json();
+  stories          = await sRes.json();
+  episodes         = await eRes.json();
+  storyEmbs        = new Float32Array(await seRes.arrayBuffer());
+  episodeEmbs      = new Float32Array(await eeRes.arrayBuffer());
+  ccAuthors        = await caRes.json();
+  epSourceStories  = await ssRes.json();
 
   populateEpisodes();
   buildAuthorChips();
@@ -370,38 +373,46 @@ function runFinder() {
   const topN     = parseInt(document.getElementById('finderCount').value) || 20;
   const minScore = parseInt(document.getElementById('finderScore').value) || 0;
   const qVec     = episodeEmbs.subarray(idx * DIM, (idx + 1) * DIM);
-  const ep       = episodes[idx];
-  const sourceIds= new Set(ep.story_ids || []);
+  const ep        = episodes[idx];
+  const sourceId  = ep.story_id || null;
+  const sourceSub = ep.story_subreddit || 'TalesFromTheCreeps';
 
-  // Compute similarities for all eligible stories
+  // If the source story is not in our TFTC dataset, look it up in epSourceStories
+  let pinnedStory = null;
+  if (sourceId) {
+    const inDataset = stories.find(s => s.id === sourceId);
+    if (inDataset) {
+      pinnedStory = { story: inDataset, isSource: true, subreddit: sourceSub };
+    } else if (epSourceStories[sourceId]) {
+      pinnedStory = { story: epSourceStories[sourceId], isSource: true, subreddit: sourceSub };
+    }
+  }
+
+  // Compute similarities for all TFTC stories (excluding the pinned one)
   const allScores = [];
   for (let i = 0; i < stories.length; i++) {
+    if (sourceId && stories[i].id === sourceId) continue; // already pinned
     if (minLen && stories[i].word_count < minLen) continue;
     if (minScore && stories[i].score < minScore) continue;
     let dot = 0, off = i * DIM;
     for (let d = 0; d < DIM; d++) dot += qVec[d] * storyEmbs[off + d];
-    allScores.push({ i, sim: dot, isSource: sourceIds.has(stories[i].id) });
+    allScores.push({ i, sim: dot });
   }
   allScores.sort((a, b) => b.sim - a.sim);
 
-  // Rescale so top non-source result = 85%, others spread down to ~15%
-  const nonSource = allScores.filter(x => !x.isSource);
-  const maxSim = nonSource.length ? nonSource[0].sim : 1;
-  const minSim = nonSource.length ? nonSource[nonSource.length - 1].sim : 0;
+  // Rescale: top result = 85%, weakest = 15%
+  const maxSim = allScores.length ? allScores[0].sim : 1;
+  const minSim = allScores.length ? allScores[allScores.length - 1].sim : 0;
   const range  = maxSim - minSim || 1;
-  const rescale = s => Math.round(((s - minSim) / range) * 70 + 15); // 15–85%
+  const rescale = s => Math.round(((s - minSim) / range) * 70 + 15);
 
-  // Source stories pinned first at 100%; rest follow
-  const sources = allScores.filter(x => x.isSource);
-  const rest    = nonSource.slice(0, topN);
-  const top     = [...sources, ...rest];
+  const rest = allScores.slice(0, topN).map(({ i, sim }) => ({
+    story: stories[i], sim: rescale(sim) / 100, isSource: false,
+  }));
+  const top = pinnedStory ? [pinnedStory, ...rest] : rest;
 
-  document.getElementById('countBadge').textContent = `${top.length} matches`;
-  renderCards(top.map(({ i, sim, isSource }) => ({
-    story: stories[i],
-    sim: isSource ? 1.0 : rescale(sim) / 100,
-    isSource,
-  })));
+  document.getElementById('countBadge').textContent = `${top.length} match${top.length !== 1 ? 'es' : ''}`;
+  renderCards(top);
 }
 
 // ── Browse ──
@@ -591,9 +602,10 @@ function makeCard(s, sim, isSource) {
 function storyInnerHTML(s, sim, withAuthor, isSource) {
   const date = new Date(s.created_utc * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   const wc = s.word_count >= 1000 ? (s.word_count / 1000).toFixed(1) + 'k' : s.word_count;
+  const srcSub = s.subreddit === 'nosleep' ? 'nosleep' : 'TFTC';
   const scoreHtml = sim !== null
     ? isSource
-      ? `<div class="score-box source-box"><div class="num">⭐</div><div class="lbl">source</div></div>`
+      ? `<div class="score-box source-box"><div class="num" style="font-size:1rem">⭐</div><div class="lbl">r/${srcSub}</div></div>`
       : `<div class="score-box"><div class="num green">${Math.round(sim * 100)}%</div><div class="lbl">match</div></div>`
     : `<div class="score-box"><div class="num gold">${s.score}</div><div class="lbl">points</div></div>`;
   const authorHtml = withAuthor
