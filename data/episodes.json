@@ -1104,5 +1104,16 @@
     "story_ids": [],
     "story_id": null,
     "story_subreddit": null
+  },
+  {
+    "title": "The Sandman",
+    "date": "August 9, 2026",
+    "description": "Wendigoon and MeatCanyon read \"The Sandman\" by Tam Lin — a father notices strange changes in his son after catching an intruder in their house.",
+    "url": "https://www.youtube.com/watch?v=z9c65mkbjYQ",
+    "story_id": "sandman_tam_lin",
+    "story_ids": [
+      "sandman_tam_lin"
+    ],
+    "story_subreddit": "creepypasta.com"
   }
 ]
