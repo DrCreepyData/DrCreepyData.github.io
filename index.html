@@ -357,7 +357,10 @@ async function loadAll() {
 function populateEpisodes() {
   const sel = document.getElementById('episodeSelect');
   sel.innerHTML = '<option value="">— choose an episode —</option>';
-  episodes.forEach((ep, i) => {
+  // Sort newest first by preserving original index, then sorting by date desc
+  const indexed = episodes.map((ep, i) => ({ep, i}));
+  indexed.sort((a, b) => new Date(b.ep.date) - new Date(a.ep.date));
+  indexed.forEach(({ep, i}) => {
     const opt = document.createElement('option');
     opt.value = i;
     opt.textContent = ep.title || `Episode ${i+1}`;
