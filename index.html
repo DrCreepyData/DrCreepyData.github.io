@@ -239,10 +239,9 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
       <div class="finder-label">MIN UPVOTES</div>
       <select id="finderScore">
         <option value="0">Any score</option>
+        <option value="10">10+</option>
+        <option value="25">25+</option>
         <option value="50">50+</option>
-        <option value="100">100+</option>
-        <option value="500">500+</option>
-        <option value="1000">1,000+</option>
       </select>
     </div>
     <div>
@@ -286,10 +285,9 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
   </select>
   <select class="ctrl" id="browseScore" onchange="onFilter()">
     <option value="0">Any score</option>
+    <option value="10">10+ upvotes</option>
+    <option value="25">25+ upvotes</option>
     <option value="50">50+ upvotes</option>
-    <option value="100">100+ upvotes</option>
-    <option value="500">500+ upvotes</option>
-    <option value="1000">1,000+ upvotes</option>
   </select>
   <button class="pill-group" style="border:1px solid var(--border);border-radius:6px;padding:0;" onclick="toggleAuthorBar()">
     <button style="background:none;border:none;color:var(--muted);padding:8px 12px;cursor:pointer;font-size:0.8rem;">👤 Author</button>
