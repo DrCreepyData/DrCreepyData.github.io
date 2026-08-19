@@ -610,7 +610,7 @@ function storyInnerHTML(s, sim, withAuthor, isSource) {
     ? `<span class="author" onclick="filterByAuthor('${esc(s.author)}',event)">u/${esc(s.author)}</span>`
     : '';
   return `
-    <div class="card-header" onclick="toggleCard(this,${JSON.stringify(s.id)},${JSON.stringify(s.url)})">
+    <div class="card-header" data-id="${esc(s.id)}" data-url="${esc(s.url)}" onclick="toggleCard(this)">
       ${scoreHtml}
       <div class="card-meta">
         <div class="card-title">${esc(s.title)}</div>
@@ -639,23 +639,29 @@ function esc(s) {
 
 const textCache = {};
 
-async function toggleCard(header, storyId, storyUrl) {
+async function toggleCard(header) {
   const card = header.closest('.card');
   card.classList.toggle('open');
   if (!card.classList.contains('open')) return;
+  const storyId = header.dataset.id;
+  const storyUrl = header.dataset.url;
   const el = document.getElementById('text-' + storyId);
   if (!el || el.dataset.loaded) return;
   if (textCache[storyId]) { el.innerHTML = textCache[storyId]; el.dataset.loaded = '1'; return; }
   try {
-    const res = await fetch(`https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=TalesFromTheCreeps&limit=1&id=${storyId}`);
+    const res = await fetch(`https://arctic-shift.photon-reddit.com/api/posts/ids?ids=${storyId}`);
     const data = await res.json();
     const post = (data.data || [])[0];
-    const text = post ? (post.selftext || '').replace(/\n/g, '<br>') : 'Text unavailable — <a href="' + esc(storyUrl) + '" target="_blank">read on Reddit</a>';
-    textCache[storyId] = text;
-    el.innerHTML = text;
+    const text = post ? (post.selftext || '').replace(/\n/g, '<br>') : '';
+    if (text) {
+      textCache[storyId] = text;
+      el.innerHTML = text;
+    } else {
+      el.innerHTML = `<a href="${storyUrl}" target="_blank">Read on Reddit ↗</a>`;
+    }
     el.dataset.loaded = '1';
   } catch(e) {
-    el.innerHTML = `Text unavailable — <a href="${esc(storyUrl)}" target="_blank">read on Reddit</a>`;
+    el.innerHTML = `<a href="${storyUrl}" target="_blank">Read on Reddit ↗</a>`;
   }
 }
 
