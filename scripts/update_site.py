@@ -11,7 +11,8 @@ POSTS_F = os.path.join(DATA, "all_posts.json")
 DIM     = 384
 EXCLUDED = {"Need Help","Offering Help","Writing Help","Story Shoutout",
             "Fan Story Discussion","Mod Announcement","Publishing Announcement",
-            "Prompt (MOD APPROVED)","Need Help (ADVICE FLAIR)","Offering Help (ADVICE FLAIR)"}
+            "Prompt (MOD APPROVED)","Need Help (ADVICE FLAIR)","Offering Help (ADVICE FLAIR)",
+            "Looking for Feedback"}
 
 
 def clean_post(p):
@@ -96,7 +97,8 @@ def main():
     print(f"Saved {len(all_posts)} total posts")
 
     # Build stories.json: all eligible posts, metadata only (no text — loaded on demand)
-    selected = [p for p in all_posts if len(p["selftext"]) >= 500]
+    selected = [p for p in all_posts if len(p["selftext"]) >= 500
+                and p.get("flair","").strip() not in EXCLUDED]
     print(f"Selected {len(selected)} stories for site")
 
     def make_story(p):
