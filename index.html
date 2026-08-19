@@ -226,13 +226,11 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
   </div>
   <div class="finder-row">
     <div>
-      <div class="finder-label">MIN WORDS</div>
+      <div class="finder-label">LENGTH</div>
       <select id="finderLen">
-        <option value="0">Any length</option>
-        <option value="500">500+ words</option>
-        <option value="1000" selected>1,000+ words</option>
-        <option value="2000">2,000+ words</option>
-        <option value="5000">5,000+ words</option>
+        <option value="any" selected>Any</option>
+        <option value="short">Short (&lt;1k words)</option>
+        <option value="long">Long (1k+ words)</option>
       </select>
     </div>
     <div>
@@ -277,11 +275,9 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
     <button onclick="setSort('recent',this)">🕐 Recent</button>
   </div>
   <select class="ctrl" id="browseLen" onchange="onFilter()">
-    <option value="0" selected>Any length</option>
-    <option value="500">500+ words</option>
-    <option value="1000">1,000+ words</option>
-    <option value="2000">2,000+ words</option>
-    <option value="5000">5,000+ words</option>
+    <option value="any" selected>Any length</option>
+    <option value="short">Short (&lt;1k words)</option>
+    <option value="long">Long (1k+ words)</option>
   </select>
   <select class="ctrl" id="browseScore" onchange="onFilter()">
     <option value="0">Any score</option>
@@ -370,7 +366,7 @@ function populateEpisodes() {
 function runFinder() {
   const idx      = parseInt(document.getElementById('episodeSelect').value);
   if (isNaN(idx)) { alert('Please select an episode first.'); return; }
-  const minLen   = parseInt(document.getElementById('finderLen').value) || 0;
+  const lenVal   = document.getElementById('finderLen').value;
   const topN     = parseInt(document.getElementById('finderCount').value) || 20;
   const minScore = parseInt(document.getElementById('finderScore').value) || 0;
   const qVec     = episodeEmbs.subarray(idx * DIM, (idx + 1) * DIM);
@@ -393,7 +389,8 @@ function runFinder() {
   const allScores = [];
   for (let i = 0; i < stories.length; i++) {
     if (sourceId && stories[i].id === sourceId) continue; // already pinned
-    if (minLen && stories[i].word_count < minLen) continue;
+    if (lenVal === 'short' && stories[i].word_count >= 1000) continue;
+    if (lenVal === 'long' && stories[i].word_count < 1000) continue;
     if (minScore && stories[i].score < minScore) continue;
     let dot = 0, off = i * DIM;
     for (let d = 0; d < DIM; d++) dot += qVec[d] * storyEmbs[off + d];
@@ -421,11 +418,11 @@ function onFilter() {
   if (currentMode !== 'browse') return;
   const q      = document.getElementById('searchInput').value.trim().toLowerCase();
   const author = document.getElementById('authorInput').value.trim().toLowerCase();
-  const minLen = parseInt(document.getElementById('browseLen').value) || 0;
-
+  const lenVal = document.getElementById('browseLen').value;
   const minScore = parseInt(document.getElementById('browseScore').value) || 0;
   filtered = stories.filter(s => {
-    if (minLen && s.word_count < minLen) return false;
+    if (lenVal === 'short' && s.word_count >= 1000) return false;
+    if (lenVal === 'long' && s.word_count < 1000) return false;
     if (minScore && s.score < minScore) return false;
     if (author && !s.author.toLowerCase().includes(author)) return false;
     if (q && !s.title.toLowerCase().includes(q) && !s.author.toLowerCase().includes(q)) return false;
