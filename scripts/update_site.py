@@ -11,7 +11,7 @@ POSTS_F = os.path.join(DATA, "all_posts.json")
 DIM     = 384
 EXCLUDED = {"Need Help","Offering Help","Writing Help","Story Shoutout",
             "Fan Story Discussion","Mod Announcement","Publishing Announcement",
-            "Prompt (MOD APPROVED)"}
+            "Prompt (MOD APPROVED)","Need Help (ADVICE FLAIR)","Offering Help (ADVICE FLAIR)"}
 
 
 def clean_post(p):
