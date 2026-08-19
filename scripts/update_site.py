@@ -95,13 +95,8 @@ def main():
         json.dump(all_posts, f, ensure_ascii=False)
     print(f"Saved {len(all_posts)} total posts")
 
-    # Build stories.json: top 2000 by score + 500 most recent, 500+ char min
-    eligible = [p for p in all_posts if len(p["selftext"]) >= 500]
-    by_score  = sorted(eligible, key=lambda p: p["score"], reverse=True)[:2000]
-    top_ids   = {p["id"] for p in by_score}
-    by_recent = sorted(eligible, key=lambda p: p["created_utc"], reverse=True)
-    extra     = [p for p in by_recent if p["id"] not in top_ids][:500]
-    selected  = by_score + extra
+    # Build stories.json: all eligible posts, metadata only (no text — loaded on demand)
+    selected = [p for p in all_posts if len(p["selftext"]) >= 500]
     print(f"Selected {len(selected)} stories for site")
 
     def make_story(p):
@@ -115,7 +110,6 @@ def main():
             "flair":        p["flair"],
             "num_comments": p["num_comments"],
             "word_count":   p.get("word_count") or len(p["selftext"].split()),
-            "text":         p["selftext"],
         }
 
     stories = [make_story(p) for p in selected]
@@ -138,13 +132,14 @@ def main():
         id_to_emb, embedded_ids = {}, []
         print("No existing embeddings — embedding all stories")
 
-    # Embed only new stories
+    # Embed only new stories (use full selftext from all_posts cache for embedding)
+    post_by_id = {p["id"]: p for p in all_posts}
     to_embed = [s for s in stories if s["id"] not in id_to_emb]
     if to_embed:
         print(f"Embedding {len(to_embed)} new stories...")
         from sentence_transformers import SentenceTransformer
         model = SentenceTransformer("BAAI/bge-small-en-v1.5")
-        texts = [s["title"] + " " + " ".join(s["text"].split()[:512]) for s in to_embed]
+        texts = [s["title"] + " " + " ".join((post_by_id[s["id"]]["selftext"]).split()[:512]) for s in to_embed]
         new_embs = embed_texts(texts, model)
         for i, s in enumerate(to_embed):
             id_to_emb[s["id"]] = new_embs[i]
