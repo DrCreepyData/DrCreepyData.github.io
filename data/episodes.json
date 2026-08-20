@@ -542,9 +542,11 @@
     "date": "Sun, 20 Jul 2025 17:00:00 -0000",
     "description": "A creepypasta classic: it's always bad when you go on a hike and end up with more people than you started with. \n\n\nStop putting off those doctors appointments and go to https://zocdoc.com/creepcast to find and instantly book a top-rated doctor today!\nRead Fleshgait here: https://creepypasta.fandom.c",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "fleshgait"
+    ],
+    "story_id": "fleshgait",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "It Came From A Fan… | Creep Cast",
@@ -678,9 +680,11 @@
     "date": "Sun, 20 Apr 2025 20:17:00 -0000",
     "description": "Meat products have become corrupted. Disgusting sludge births bug-like creatures. But how does it tase?\n\n\nOver 2 Million Butts Love TUSHY. Get 10% off TUSHY with the code CREEPCAST at https://hellotushy.com/CREEPCAST",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "burgrr_entries"
+    ],
+    "story_id": "burgrr_entries",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "The Red Tower | Creep Cast",
@@ -837,18 +841,22 @@
     "date": "Sun, 01 Dec 2024 18:00:00 -0000",
     "description": "This week, the guys read one of the oldest creepypastas to exist. Written by a very talented screenwriter, this thread of email correspondence unravels a theory that a particular house keeps luring them in.",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "dionaea_house"
+    ],
+    "story_id": "dionaea_house",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "Goatman, Laughing Jack and more... | Creep Cast",
     "date": "Sun, 24 Nov 2024 18:00:00 -0000",
     "description": "Isaiah and Hunter read some of the most requested, most beloved creepypastas there are. But probably not for the reasons you'd think. In the end, it's just two guys dicking around. You're listening to Creep Cast Live On Tour!",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "laughing_jack"
+    ],
+    "story_id": "laughing_jack",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "The Whistler At 3:03 AM | Creep Cast",
@@ -864,9 +872,11 @@
     "date": "Sun, 10 Nov 2024 19:00:00 -0000",
     "description": "As promised, in honor of the one year anniversary of Creep Cast, Isaiah and Hunter read Ted The Caver together.",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "ted_the_caver"
+    ],
+    "story_id": "ted_the_caver",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "SCP 3000 | Creep Cast",
@@ -987,9 +997,11 @@
     "date": "Sat, 15 Jun 2024 17:00:00 -0000",
     "description": "We're sorry...",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "tommy_taffy"
+    ],
+    "story_id": "tommy_taffy",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "Creepy Grab Bag #1 | Creep Cast",
@@ -1005,9 +1017,11 @@
     "date": "Sat, 18 May 2024 22:30:00 -0000",
     "description": "A man takes a dare to go through a haunted house. The winner gets a $500 prize, but he soon realizes he’s in for more than he thought.",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "no_end_house"
+    ],
+    "story_id": "no_end_house",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "The Showers | Creep Cast",
@@ -1068,9 +1082,11 @@
     "date": "Sat, 10 Feb 2024 21:33:22 -0000",
     "description": "A young man is sent polaroids by a mysterious stranger that plagues him through his early years.",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "penpal"
+    ],
+    "story_id": "penpal",
+    "story_subreddit": "nosleep"
   },
   {
     "title": "My Dead Girlfriend Is Messaging Me On Facebook | Creep Cast",
