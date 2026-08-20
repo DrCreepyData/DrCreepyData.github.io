@@ -625,11 +625,8 @@ function storyInnerHTML(s, sim, withAuthor, isSource) {
       <div class="chevron">▼</div>
     </div>
     <div class="story-body">
-      <div class="story-text" id="text-${esc(s.id)}">Loading…</div>
-      <div class="story-actions">
-        <a href="${esc(s.url)}" target="_blank" class="btn btn-reddit">View on Reddit ↗</a>
-        ${withAuthor ? `<button class="btn btn-secondary" onclick="filterByAuthor('${esc(s.author)}',event)">More by u/${esc(s.author)}</button>` : ''}
-      </div>
+      <div class="story-text" id="text-${esc(s.id)}"></div>
+      ${withAuthor ? `<div class="story-actions"><button class="btn btn-secondary" onclick="filterByAuthor('${esc(s.author)}',event)">More by u/${esc(s.author)}</button></div>` : ''}
     </div>`;
 }
 
@@ -647,21 +644,21 @@ async function toggleCard(header) {
   const storyUrl = header.dataset.url;
   const el = document.getElementById('text-' + storyId);
   if (!el || el.dataset.loaded) return;
-  if (textCache[storyId]) { el.innerHTML = textCache[storyId]; el.dataset.loaded = '1'; return; }
+  // Always show the link immediately
+  el.innerHTML = `<div style="margin-bottom:12px"><a href="${storyUrl}" target="_blank" class="btn btn-reddit">Read on Reddit ↗</a></div><div id="text-body-${storyId}">Loading story…</div>`;
+  el.dataset.loaded = '1';
+  if (textCache[storyId]) { document.getElementById('text-body-'+storyId).innerHTML = textCache[storyId]; return; }
   try {
     const res = await fetch(`https://arctic-shift.photon-reddit.com/api/posts/ids?ids=${storyId}`);
     const data = await res.json();
     const post = (data.data || [])[0];
     const text = post ? (post.selftext || '').replace(/\n/g, '<br>') : '';
-    if (text) {
-      textCache[storyId] = text;
-      el.innerHTML = text;
-    } else {
-      el.innerHTML = `<a href="${storyUrl}" target="_blank">Read on Reddit ↗</a>`;
-    }
-    el.dataset.loaded = '1';
+    const bodyEl = document.getElementById('text-body-' + storyId);
+    if (bodyEl) bodyEl.innerHTML = text || '';
+    if (text) textCache[storyId] = text;
   } catch(e) {
-    el.innerHTML = `<a href="${storyUrl}" target="_blank">Read on Reddit ↗</a>`;
+    const bodyEl = document.getElementById('text-body-' + storyId);
+    if (bodyEl) bodyEl.innerHTML = '';
   }
 }
 
