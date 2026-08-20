@@ -333,9 +333,11 @@
     "date": "Sun, 14 Dec 2025 18:00:00 -0000",
     "description": "It's finally here. Thank you for two years of Creep Cast.\n\n\n\n\nUse code CREEPCAST50OFF at https://factormeals.com/CREEPCAST50OFF to get 50% OFF your first box, plus free Breakfast for one year.\nTake advantage of Ridge’s Biggest Sale of the Year and GET UP TO 47% Off by going to https://www.ridge.com/",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "stairs_in_the_woods_sar"
+    ],
+    "story_id": "stairs_in_the_woods_sar",
+    "story_subreddit": "nosleep"
   },
   {
     "title": "Dreams Beneath The Witch Tree",
@@ -723,9 +725,12 @@
     "date": "Sun, 09 Mar 2025 17:51:00 -0000",
     "description": "Hunter and Isaiah dive in to all of the original creepypasta stories.",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "the_rake",
+      "mr_widemouth"
+    ],
+    "story_id": "the_rake",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "Azalea's Cookhouse Is A Family Restaurant",
@@ -904,9 +909,11 @@
     "date": "Sun, 22 Sep 2024 17:00:00 -0000",
     "description": "Weird things are happening at this gas station. And Jack is telling us all about it. A beloved creepypasta and now a four-part book series, the boys embark on one of the most requested stories of the year.\n\nShow notes link: (https://www.creepypasta.com/tales-from-the-gas-station/)",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "tales_from_gas_station"
+    ],
+    "story_id": "tales_from_gas_station",
+    "story_subreddit": "nosleep"
   },
   {
     "title": "My Job Is Watching A Woman Trapped In A Room | Creep Cast",
@@ -949,18 +956,22 @@
     "date": "Sun, 28 Jul 2024 17:00:00 -0000",
     "description": "A man asks you a very important question-- will you feed the pig?\nWARNING: This story has conversations surrounding suicide and r*pe and includes depictions of intense violence. Feed the Pig at your own peril.",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "feed_the_pig"
+    ],
+    "story_id": "feed_the_pig",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "Psychosis | Creep Cast",
     "date": "Sun, 14 Jul 2024 21:11:35 -0000",
     "description": "It's been a while since John has seen or talked to anyone. Maybe he just needs to go outside.",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "psychosis"
+    ],
+    "story_id": "psychosis",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "My Wife's Been Peeking At Me Around Corners | Creep Cast",
@@ -1095,27 +1106,33 @@
     "date": "Sun, 31 Dec 2023 00:00:00 -0000",
     "description": "In this week's episode, CreepCast revisits another story from the golden age of Creepy pasta: The Russian Sleep Experiment. This tale of horror and misery has been fondly remembered for many years, but is it for good reason? Find out today on CreepCast!",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "russian_sleep_experiment"
+    ],
+    "story_id": "russian_sleep_experiment",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "Jeff The Killer | Creep Cast",
     "date": "Sun, 17 Dec 2023 11:37:30 -0000",
     "description": "This week, CreepCast takes a look back at an internet classic, the legend of Jeff the Killer! A story that’s impacted modern horror culture gets a re-visit. Will it live up to the hype or be a hilarious reminder of early internet horror’s quality? (spoilers: it’s the second one). Join us for a walk ",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "jeff_the_killer"
+    ],
+    "story_id": "jeff_the_killer",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "The Stairs In The Woods | Creep Cast",
     "date": "Sat, 02 Dec 2023 18:21:00 -0000",
     "description": "",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "stairs_in_the_woods_sar"
+    ],
+    "story_id": "stairs_in_the_woods_sar",
+    "story_subreddit": "nosleep"
   },
   {
     "title": "The Sandman",
