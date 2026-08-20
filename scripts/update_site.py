@@ -141,7 +141,7 @@ def main():
         print(f"Embedding {len(to_embed)} new stories...")
         from sentence_transformers import SentenceTransformer
         model = SentenceTransformer("BAAI/bge-small-en-v1.5")
-        texts = [s["title"] + " " + " ".join((post_by_id[s["id"]]["selftext"]).split()[:512]) for s in to_embed]
+        texts = [s["title"] + " " + " ".join((post_by_id[s["id"]]["selftext"]).split()[:1500]) for s in to_embed]
         new_embs = embed_texts(texts, model)
         for i, s in enumerate(to_embed):
             id_to_emb[s["id"]] = new_embs[i]
