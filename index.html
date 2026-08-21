@@ -198,6 +198,107 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
   .card-header { gap: 10px; }
   .score-box { min-width: 44px; padding: 4px 6px; }
 }
+
+/* ── Reader overlay (Kindle mode) ── */
+.reader-overlay {
+  display: none; position: fixed; inset: 0; z-index: 1000;
+  background: var(--rd-bg); color: var(--rd-text);
+  flex-direction: column;
+}
+.reader-overlay.open { display: flex; }
+
+/* Reader colour tokens — dark default */
+.reader-overlay {
+  --rd-bg: #111;
+  --rd-text: #ddd;
+  --rd-muted: #888;
+  --rd-border: #2a2a2a;
+  --rd-bar: #c0392b;
+}
+.reader-overlay.light {
+  --rd-bg: #f5f0e8;
+  --rd-text: #1a1a1a;
+  --rd-muted: #666;
+  --rd-border: #ddd;
+  --rd-bar: #c0392b;
+}
+
+.reader-progress { height: 3px; background: var(--rd-bar); width: 0%; transition: width 0.1s; flex-shrink: 0; }
+.reader-toolbar {
+  display: flex; align-items: center; gap: 8px; padding: 10px 16px;
+  background: var(--rd-bg); border-bottom: 1px solid var(--rd-border); flex-shrink: 0;
+}
+.reader-close {
+  background: none; border: 1px solid var(--rd-border); color: var(--rd-text);
+  border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.reader-close:hover { border-color: var(--rd-bar); color: var(--rd-bar); }
+.reader-title {
+  flex: 1; font-size: 0.85rem; color: var(--rd-muted); overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+}
+.reader-controls { display: flex; gap: 6px; flex-shrink: 0; }
+.rd-btn {
+  background: none; border: 1px solid var(--rd-border); color: var(--rd-text);
+  border-radius: 5px; padding: 5px 10px; cursor: pointer; font-size: 0.8rem;
+  line-height: 1;
+}
+.rd-btn:hover { border-color: var(--rd-bar); color: var(--rd-bar); }
+
+.reader-body {
+  flex: 1; overflow-y: auto; padding: 24px 20px 80px;
+  scroll-behavior: smooth;
+}
+.reader-body::-webkit-scrollbar { width: 4px; }
+.reader-body::-webkit-scrollbar-thumb { background: var(--rd-border); border-radius: 2px; }
+
+.reader-content {
+  max-width: 640px; margin: 0 auto;
+}
+.reader-story-title {
+  font-size: 1.5rem; font-weight: bold; margin-bottom: 6px; line-height: 1.3;
+  color: var(--rd-text);
+}
+.reader-story-meta {
+  font-size: 0.8rem; color: var(--rd-muted); margin-bottom: 28px;
+  padding-bottom: 16px; border-bottom: 1px solid var(--rd-border);
+  font-family: monospace;
+}
+.reader-text {
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1.9; white-space: pre-wrap; word-break: break-word;
+  color: var(--rd-text); font-size: var(--rd-font, 17px);
+}
+.reader-text br { display: block; content: ''; margin-top: 0.6em; }
+.reader-loading { color: var(--rd-muted); font-style: italic; padding: 40px 0; }
+.reader-link-bar {
+  margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--rd-border);
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.rd-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 6px; font-size: 0.85rem;
+  text-decoration: none; border: 1px solid var(--rd-border);
+  color: var(--rd-text); transition: all 0.15s;
+}
+.rd-link:hover { border-color: var(--rd-bar); color: var(--rd-bar); }
+.rd-link.reddit { background: #ff4500; border-color: #ff4500; color: #fff; }
+.rd-link.reddit:hover { background: #e03d00; border-color: #e03d00; color: #fff; }
+
+/* ── btn-read on cards ── */
+.btn-read {
+  background: var(--accent); color: #fff; border: none; border-radius: 5px;
+  padding: 6px 14px; cursor: pointer; font-size: 0.8rem; font-family: Georgia, serif;
+  transition: background 0.15s; display: inline-flex; align-items: center; gap: 5px;
+}
+.btn-read:hover { background: var(--accent2); }
+
+@media (max-width: 600px) {
+  .reader-toolbar { gap: 6px; padding: 8px 12px; }
+  .reader-body { padding: 18px 14px 80px; }
+  .reader-story-title { font-size: 1.25rem; }
+}
 </style>
 </head>
 <body>
@@ -209,6 +310,23 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
     <div class="header-sub">r/TalesFromTheCreeps · story finder</div>
   </div>
 </header>
+
+<!-- Reader overlay -->
+<div class="reader-overlay" id="readerOverlay">
+  <div class="reader-progress" id="readerProgress"></div>
+  <div class="reader-toolbar">
+    <button class="reader-close" onclick="closeReader()">✕ Close</button>
+    <div class="reader-title" id="readerTitle"></div>
+    <div class="reader-controls">
+      <button class="rd-btn" onclick="rdFont(-1)" title="Smaller text">A−</button>
+      <button class="rd-btn" onclick="rdFont(1)" title="Larger text">A+</button>
+      <button class="rd-btn" id="rdThemeBtn" onclick="rdToggleTheme()" title="Toggle light/dark">☀️</button>
+    </div>
+  </div>
+  <div class="reader-body" id="readerBody" onscroll="rdUpdateProgress()">
+    <div class="reader-content" id="readerContent"></div>
+  </div>
+</div>
 
 <div class="mode-tabs">
   <div class="mode-tab active" id="tab-finder" onclick="setMode('finder')">🎙️ Episode Finder</div>
@@ -626,7 +744,10 @@ function storyInnerHTML(s, sim, withAuthor, isSource) {
     </div>
     <div class="story-body">
       <div class="story-text" id="text-${esc(s.id)}"></div>
-      ${withAuthor ? `<div class="story-actions"><button class="btn btn-secondary" onclick="filterByAuthor('${esc(s.author)}',event)">More by u/${esc(s.author)}</button></div>` : ''}
+      <div class="story-actions">
+        <button class="btn-read" onclick="openReader('${esc(s.id)}','${esc(s.url)}','${esc(s.title)}','${esc(s.author)}',event)">📖 Read</button>
+        ${withAuthor ? `<button class="btn btn-secondary" onclick="filterByAuthor('${esc(s.author)}',event)">More by u/${esc(s.author)}</button>` : ''}
+      </div>
     </div>`;
 }
 
@@ -635,6 +756,97 @@ function esc(s) {
 }
 
 const textCache = {};
+
+// ── Reader overlay ──────────────────────────────────
+let rdFontSize = parseInt(localStorage.getItem('rdFont') || '17');
+let rdLight = localStorage.getItem('rdTheme') === 'light';
+
+function applyRdTheme() {
+  const ov = document.getElementById('readerOverlay');
+  ov.classList.toggle('light', rdLight);
+  document.getElementById('rdThemeBtn').textContent = rdLight ? '🌙' : '☀️';
+}
+
+function rdFont(delta) {
+  rdFontSize = Math.max(13, Math.min(24, rdFontSize + delta));
+  localStorage.setItem('rdFont', rdFontSize);
+  document.getElementById('readerBody').style.setProperty('--rd-font', rdFontSize + 'px');
+}
+
+function rdToggleTheme() {
+  rdLight = !rdLight;
+  localStorage.setItem('rdTheme', rdLight ? 'light' : '');
+  applyRdTheme();
+}
+
+function rdUpdateProgress() {
+  const body = document.getElementById('readerBody');
+  const pct = body.scrollHeight <= body.clientHeight ? 100
+    : Math.round(body.scrollTop / (body.scrollHeight - body.clientHeight) * 100);
+  document.getElementById('readerProgress').style.width = pct + '%';
+}
+
+function closeReader() {
+  document.getElementById('readerOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeReader();
+});
+
+async function openReader(storyId, storyUrl, title, author, evt) {
+  if (evt) evt.stopPropagation();
+  const overlay = document.getElementById('readerOverlay');
+  const body = document.getElementById('readerBody');
+  const content = document.getElementById('readerContent');
+
+  // Setup overlay
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  applyRdTheme();
+  body.style.setProperty('--rd-font', rdFontSize + 'px');
+  body.scrollTop = 0;
+  rdUpdateProgress();
+  document.getElementById('readerTitle').textContent = title;
+
+  const date = new Date(); // placeholder until we load story
+  content.innerHTML = `
+    <div class="reader-story-title">${esc(title)}</div>
+    <div class="reader-story-meta">u/${esc(author)} · <a href="${esc(storyUrl)}" target="_blank" style="color:inherit">view on Reddit ↗</a></div>
+    <div class="reader-text reader-loading">Loading story…</div>`;
+
+  // Fetch text (use cache)
+  let text = textCache[storyId];
+  if (!text) {
+    try {
+      const res = await fetch(`https://arctic-shift.photon-reddit.com/api/posts/ids?ids=${storyId}`);
+      const data = await res.json();
+      const post = (data.data || [])[0];
+      text = post ? (post.selftext || '') : '';
+      if (text) textCache[storyId] = text;
+    } catch(e) { text = ''; }
+  }
+
+  const formatted = text
+    ? text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+           .replace(/\n/g,'<br>')
+    : '<em style="color:var(--rd-muted)">Story text not available — read on Reddit.</em>';
+
+  const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
+  const mins = wordCount > 0 ? `~${Math.ceil(wordCount / 200)} min read · ${wordCount >= 1000 ? (wordCount/1000).toFixed(1)+'k' : wordCount} words` : '';
+
+  content.innerHTML = `
+    <div class="reader-story-title">${esc(title)}</div>
+    <div class="reader-story-meta">u/${esc(author)}${mins ? ' · ' + mins : ''}</div>
+    <div class="reader-text">${formatted}</div>
+    <div class="reader-link-bar">
+      <a href="${esc(storyUrl)}" target="_blank" class="rd-link reddit">📖 Read on Reddit ↗</a>
+    </div>`;
+
+  body.scrollTop = 0;
+  rdUpdateProgress();
+}
 
 async function toggleCard(header) {
   const card = header.closest('.card');
