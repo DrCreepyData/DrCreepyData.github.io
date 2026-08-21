@@ -264,9 +264,11 @@
     "date": "Sun, 01 Feb 2026 18:00:00 -0000",
     "description": "A creepy pasta classic. Are we sure these doors will keep them in there?\n\n\n\n\nTry Rocket Money for FREE or unlock more features with premium at: ⁠https://RocketMoney.com/Creepcast⁠ \nTry Protonmail and get end-to-end encryption! Drive link: ⁠https://go.getproton.me/SH2JI⁠\nMail link: ⁠http://proton.me/",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "harbinger_experiment"
+    ],
+    "story_id": "harbinger_experiment",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "I Found The Bunker Of A Prepper Family",
@@ -506,9 +508,11 @@
     "date": "Sun, 17 Aug 2025 17:00:00 -0000",
     "description": "Pinkie Pie and Rainbow Dash make cupcakes! \n\n\n\n\nTry Rocket Money for free: https://RocketMoney.com/CREEPCAST \nRead Cupcakes: https://mlppasta.fandom.com/wiki/Cupc...)",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "cupcakes"
+    ],
+    "story_id": "cupcakes",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "I Clean Hoarder Houses For A Living",
@@ -662,9 +666,11 @@
     "date": "Sun, 04 May 2025 15:59:00 -0000",
     "description": "Read Ticci Toby by Kastoway here: ⁠https://www.creepypasta.com/ticci-toby/\n\n\nGet started with AG1 Next Gen for less than $3 a day when you\nSubscribe! https://drinkag1.com/creepcast \nLevel up your game and get 10% off @TurtleBeach with code CREEPCAST at https://turtlebeach.com/creepcast   #turtlebeac",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "ticci_toby"
+    ],
+    "story_id": "ticci_toby",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "Spire In The Woods | Creep Cast",
@@ -883,9 +889,11 @@
     "date": "Sun, 03 Nov 2024 18:00:00 -0000",
     "description": "SCP's are on the menu! The guys record from the road on their sold-out live tour to talk about an ancient eel that seems to be stealing people’s memories.",
     "url": "",
-    "story_ids": [],
-    "story_id": null,
-    "story_subreddit": null
+    "story_ids": [
+      "scp_3000"
+    ],
+    "story_id": "scp_3000",
+    "story_subreddit": "creepypasta.com"
   },
   {
     "title": "Deepwoods | Creep Cast",
