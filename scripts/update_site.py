@@ -107,8 +107,8 @@ def main():
         json.dump(all_posts, f, ensure_ascii=False)
     print(f"Saved {len(all_posts)} total posts")
 
-    # Build stories.json: all eligible posts, metadata only (no text — loaded on demand)
-    selected = [p for p in all_posts if p.get("subreddit","") in STORY_SUBS
+    # Build stories.json: TFTC-only stories for Browse/Episode Finder
+    selected = [p for p in all_posts if p.get("subreddit","") == "TalesFromTheCreeps"
                 and len((p.get("selftext") or "").split()) >= MIN_WORDS
                 and (p.get("selftext") or "").strip() not in ("[removed]","[deleted]")
                 and (p.get("link_flair_text") or "").strip() not in EXCLUDED]

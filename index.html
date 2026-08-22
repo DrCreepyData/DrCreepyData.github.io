@@ -332,6 +332,7 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
   <div class="mode-tab active" id="tab-finder" onclick="setMode('finder')">🎙️ Episode Finder</div>
   <div class="mode-tab" id="tab-browse" onclick="setMode('browse')">📚 Browse</div>
   <div class="mode-tab" id="tab-authors" onclick="setMode('authors')">👤 CC Authors</div>
+  <div class="mode-tab" id="tab-tftc" onclick="setMode('tftc')">📖 TFTC Authors</div>
 </div>
 
 <!-- Episode Finder -->
@@ -383,6 +384,14 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
   <div class="count-badge" id="authorsCount"></div>
 </div>
 
+<!-- TFTC Authors -->
+<div class="authors-panel hidden" id="tftcPanel">
+  <div class="search-wrap">
+    <input type="text" id="tftcSearch" placeholder="Search TFTC authors…" oninput="renderTftcAuthors()">
+  </div>
+  <div class="count-badge" id="tftcCount"></div>
+</div>
+
 <!-- Browse -->
 <div class="browse-panel hidden" id="browsePanel">
   <div class="search-wrap">
@@ -425,6 +434,7 @@ main { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
     <button onclick="showMore()">Load more</button>
   </div>
   <div class="author-list" id="authorList" style="display:none"></div>
+  <div class="author-list" id="tftcAuthorList" style="display:none"></div>
 </main>
 
 <script>
@@ -433,6 +443,7 @@ let storyEmbs = null;
 let episodeEmbs = null;
 let episodes = [];
 let ccAuthors = {};
+let tftcAuthors = {};
 let epSourceStories = {};  // story_id -> source story object
 let filtered = [];
 let browseSort = 'score';
@@ -443,13 +454,14 @@ const DIM = 384;
 const PAGE = 30;
 
 async function loadAll() {
-  const [sRes, eRes, seRes, eeRes, caRes, ssRes] = await Promise.all([
+  const [sRes, eRes, seRes, eeRes, caRes, ssRes, taRes] = await Promise.all([
     fetch('data/stories.json'),
     fetch('data/episodes.json'),
     fetch('data/embeddings.bin'),
     fetch('data/episode_embeddings.bin'),
     fetch('data/cc_authors.json'),
     fetch('data/episode_source_stories.json'),
+    fetch('data/tftc_authors.json'),
   ]);
   stories          = await sRes.json();
   episodes         = await eRes.json();
@@ -457,12 +469,14 @@ async function loadAll() {
   episodeEmbs      = new Float32Array(await eeRes.arrayBuffer());
   ccAuthors        = await caRes.json();
   epSourceStories  = await ssRes.json();
+  tftcAuthors      = await taRes.json();
 
   populateEpisodes();
   buildAuthorChips();
   document.getElementById('findBtn').disabled = false;
   document.getElementById('browseCount').textContent = stories.length.toLocaleString() + ' stories';
   document.getElementById('authorsCount').textContent = Object.keys(ccAuthors).length + ' authors';
+  document.getElementById('tftcCount').textContent = Object.keys(tftcAuthors).length.toLocaleString() + ' authors';
   onFilter();
 }
 
@@ -663,20 +677,90 @@ function makeAuthorCard(username, data) {
   return card;
 }
 
+// ── TFTC Authors tab ──
+function renderTftcAuthors() {
+  const q = (document.getElementById('tftcSearch').value || '').trim().toLowerCase();
+  const list = document.getElementById('tftcAuthorList');
+  list.innerHTML = '';
+
+  const entries = Object.entries(tftcAuthors);
+  const visible = q ? entries.filter(([u]) => u.toLowerCase().includes(q)) : entries;
+  document.getElementById('tftcCount').textContent = visible.length.toLocaleString() + ' of ' + entries.length.toLocaleString() + ' authors';
+
+  visible.forEach(([username, data]) => {
+    list.appendChild(makeTftcAuthorCard(username, data));
+  });
+}
+
+function makeTftcAuthorCard(username, data) {
+  const card = document.createElement('div');
+  card.className = 'author-card';
+  const hasStories = data.stories.length > 0;
+  const hasEps = data.episodes.length > 0;
+
+  const storiesHtml = hasStories
+    ? data.stories.slice(0, 10).map(s => {
+        const date = new Date(s.created_utc * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+        const wc = s.word_count >= 1000 ? (s.word_count / 1000).toFixed(1) + 'k' : s.word_count;
+        return `<div class="card" style="margin:10px 16px;border-radius:6px;">
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div class="score-box"><div class="num gold">${s.score}</div><div class="lbl">upvotes</div></div>
+            <div style="flex:1;min-width:0;">
+              <a class="card-title" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>
+              <div class="card-info">${esc(date)} · ${esc(String(wc))} words</div>
+            </div>
+          </div>
+        </div>`;
+      }).join('') + (data.stories.length > 10 ? `<div style="padding:8px 16px;color:var(--muted);font-size:0.8rem">+${data.stories.length - 10} more stories</div>` : '')
+    : '';
+
+  const epBadge = hasEps
+    ? `<span class="badge badge-ep">🎙️ ${data.episodes.length} CC episode${data.episodes.length !== 1 ? 's' : ''}</span>`
+    : `<span class="badge badge-none">Not on CC yet</span>`;
+
+  const epListHtml = hasEps
+    ? `<div style="border-top:1px solid var(--border);padding:10px 16px;background:var(--surface2);">
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;">FEATURED ON CREEPCAST</div>
+        ${data.episodes.map(e => `<div style="margin-bottom:4px;font-size:0.85rem;">
+          <a href="${esc(e.url)}" target="_blank" rel="noopener" style="color:var(--accent2);">${esc(e.title)}</a>
+          <span style="color:var(--muted);font-size:0.75rem;"> · ${esc(e.date)}</span>
+        </div>`).join('')}
+      </div>`
+    : '';
+
+  card.innerHTML = `
+    <div class="author-card-header" onclick="this.closest('.author-card').classList.toggle('open')">
+      <div class="author-avatar ${hasEps ? 'has-stories' : ''}">${esc(username[0].toUpperCase())}</div>
+      <div class="author-card-meta">
+        <div class="author-name">u/${esc(username)}</div>
+        <div class="author-badges">
+          ${epBadge}
+          <span class="badge badge-stories">📖 ${data.stories.length} stor${data.stories.length !== 1 ? 'ies' : 'y'}</span>
+        </div>
+      </div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="author-stories">${epListHtml}${storiesHtml}</div>`;
+  return card;
+}
+
 // ── Mode switching ──
 function setMode(mode) {
   currentMode = mode;
-  ['finder','browse','authors'].forEach(m => {
+  ['finder','browse','authors','tftc'].forEach(m => {
     document.getElementById('tab-' + m).classList.toggle('active', mode === m);
   });
   document.getElementById('finderPanel').classList.toggle('hidden', mode !== 'finder');
   document.getElementById('browsePanel').classList.toggle('hidden', mode !== 'browse');
   document.getElementById('authorsPanel').classList.toggle('hidden', mode !== 'authors');
+  document.getElementById('tftcPanel').classList.toggle('hidden', mode !== 'tftc');
   document.getElementById('authorBar').classList.toggle('hidden', mode !== 'browse');
 
-  document.getElementById('storyList').style.display  = mode === 'authors' ? 'none' : '';
-  document.getElementById('loadMore').style.display   = mode === 'authors' ? 'none' : (mode === 'browse' && filtered.length > PAGE ? 'block' : 'none');
-  document.getElementById('authorList').style.display = mode === 'authors' ? '' : 'none';
+  const isListMode = mode === 'authors' || mode === 'tftc';
+  document.getElementById('storyList').style.display      = isListMode ? 'none' : '';
+  document.getElementById('loadMore').style.display       = isListMode ? 'none' : (mode === 'browse' && filtered.length > PAGE ? 'block' : 'none');
+  document.getElementById('authorList').style.display     = mode === 'authors' ? '' : 'none';
+  document.getElementById('tftcAuthorList').style.display = mode === 'tftc' ? '' : 'none';
 
   if (mode === 'finder') {
     document.getElementById('stateMsg').style.display = 'block';
@@ -689,6 +773,9 @@ function setMode(mode) {
   } else if (mode === 'authors') {
     document.getElementById('stateMsg').style.display = 'none';
     if (document.getElementById('authorList').children.length === 0) renderAuthors();
+  } else if (mode === 'tftc') {
+    document.getElementById('stateMsg').style.display = 'none';
+    if (document.getElementById('tftcAuthorList').children.length === 0) renderTftcAuthors();
   }
 }
 
