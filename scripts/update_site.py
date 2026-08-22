@@ -12,14 +12,25 @@ DIM     = 384
 EXCLUDED = {"Need Help","Offering Help","Writing Help","Story Shoutout",
             "Fan Story Discussion","Mod Announcement","Publishing Announcement",
             "Prompt (MOD APPROVED)","Need Help (ADVICE FLAIR)","Offering Help (ADVICE FLAIR)",
-            "Looking for Feedback"}
+            "Looking for Feedback","Discussion","Fan Art","Story Notes","Venting",
+            "Writing Prompt","JUST POSTED","Activities&Events","Non-Fiction"}
+
+# Only include posts from story-focused subreddits
+STORY_SUBS = {"TalesFromTheCreeps","nosleep","creepcast","StrangeAccounts",
+              "TheCrypticCompendium","shortscarystories","Max_Voynich",
+              "u_StrangeAccounts","u_nazisharks","u_ChristianWallis"}
+
+MIN_WORDS = 400
 
 
 def clean_post(p):
     selftext = (p.get("selftext") or "").strip()
-    if len(selftext) < 500 or selftext in ("[removed]", "[deleted]"):
+    if len(selftext.split()) < MIN_WORDS or selftext in ("[removed]", "[deleted]"):
         return None
     if (p.get("link_flair_text") or "").strip() in EXCLUDED:
+        return None
+    sub = (p.get("subreddit") or "")
+    if sub not in STORY_SUBS:
         return None
     permalink = p.get("permalink", "")
     return {
@@ -97,8 +108,10 @@ def main():
     print(f"Saved {len(all_posts)} total posts")
 
     # Build stories.json: all eligible posts, metadata only (no text — loaded on demand)
-    selected = [p for p in all_posts if len(p["selftext"]) >= 500
-                and p.get("flair","").strip() not in EXCLUDED]
+    selected = [p for p in all_posts if p.get("subreddit","") in STORY_SUBS
+                and len((p.get("selftext") or "").split()) >= MIN_WORDS
+                and (p.get("selftext") or "").strip() not in ("[removed]","[deleted]")
+                and (p.get("link_flair_text") or "").strip() not in EXCLUDED]
     print(f"Selected {len(selected)} stories for site")
 
     def make_story(p):
