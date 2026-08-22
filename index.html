@@ -692,55 +692,72 @@ function renderTftcAuthors() {
   });
 }
 
+function makeTftcStoryList(stories, limit) {
+  const shown = stories.slice(0, limit);
+  const rest = stories.length - shown.length;
+  return shown.map(s => {
+    const date = new Date(s.created_utc * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+    const wc = s.word_count >= 1000 ? (s.word_count / 1000).toFixed(1) + 'k' : s.word_count;
+    return `<div class="card" style="margin:6px 16px;border-radius:6px;">
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div class="score-box"><div class="num gold">${s.score}</div><div class="lbl">upvotes</div></div>
+        <div style="flex:1;min-width:0;">
+          <a class="card-title" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>
+          <div class="card-info">${esc(date)} · ${esc(String(wc))} words</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('') + (rest > 0 ? `<div style="padding:6px 16px 10px;color:var(--muted);font-size:0.8rem">+${rest} more</div>` : '');
+}
+
 function makeTftcAuthorCard(username, data) {
   const card = document.createElement('div');
   card.className = 'author-card';
-  const hasStories = data.stories.length > 0;
-  const hasEps = data.episodes.length > 0;
-
-  const storiesHtml = hasStories
-    ? data.stories.slice(0, 10).map(s => {
-        const date = new Date(s.created_utc * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
-        const wc = s.word_count >= 1000 ? (s.word_count / 1000).toFixed(1) + 'k' : s.word_count;
-        return `<div class="card" style="margin:10px 16px;border-radius:6px;">
-          <div style="display:flex;gap:12px;align-items:flex-start;">
-            <div class="score-box"><div class="num gold">${s.score}</div><div class="lbl">upvotes</div></div>
-            <div style="flex:1;min-width:0;">
-              <a class="card-title" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>
-              <div class="card-info">${esc(date)} · ${esc(String(wc))} words</div>
-            </div>
-          </div>
-        </div>`;
-      }).join('') + (data.stories.length > 10 ? `<div style="padding:8px 16px;color:var(--muted);font-size:0.8rem">+${data.stories.length - 10} more stories</div>` : '')
-    : '';
+  const hasTftc = data.tftc && data.tftc.length > 0;
+  const hasNosleep = data.nosleep && data.nosleep.length > 0;
+  const hasEps = data.episodes && data.episodes.length > 0;
+  const totalStories = (data.tftc || []).length + (data.nosleep || []).length;
 
   const epBadge = hasEps
     ? `<span class="badge badge-ep">🎙️ ${data.episodes.length} CC episode${data.episodes.length !== 1 ? 's' : ''}</span>`
     : `<span class="badge badge-none">Not on CC yet</span>`;
 
+  const tftcBadge = hasTftc
+    ? `<span class="badge badge-stories">📖 ${data.tftc.length} TFTC</span>` : '';
+  const nosleepBadge = hasNosleep
+    ? `<span class="badge" style="background:rgba(100,60,180,0.15);color:#b39ddb;border:1px solid #7e57c2;">😴 ${data.nosleep.length} nosleep</span>` : '';
+
   const epListHtml = hasEps
     ? `<div style="border-top:1px solid var(--border);padding:10px 16px;background:var(--surface2);">
-        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;">FEATURED ON CREEPCAST</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;letter-spacing:.05em">FEATURED ON CREEPCAST</div>
         ${data.episodes.map(e => `<div style="margin-bottom:4px;font-size:0.85rem;">
           <a href="${esc(e.url)}" target="_blank" rel="noopener" style="color:var(--accent2);">${esc(e.title)}</a>
           <span style="color:var(--muted);font-size:0.75rem;"> · ${esc(e.date)}</span>
         </div>`).join('')}
-      </div>`
-    : '';
+      </div>` : '';
+
+  const tftcHtml = hasTftc
+    ? `<div style="border-top:1px solid var(--border);padding:10px 0 4px;">
+        <div style="font-size:0.75rem;color:var(--muted);padding:0 16px 6px;letter-spacing:.05em">r/TalesFromTheCreeps</div>
+        ${makeTftcStoryList(data.tftc, 8)}
+      </div>` : '';
+
+  const nosleepHtml = hasNosleep
+    ? `<div style="border-top:1px solid var(--border);padding:10px 0 4px;">
+        <div style="font-size:0.75rem;color:#b39ddb;padding:0 16px 6px;letter-spacing:.05em">r/nosleep</div>
+        ${makeTftcStoryList(data.nosleep, 8)}
+      </div>` : '';
 
   card.innerHTML = `
     <div class="author-card-header" onclick="this.closest('.author-card').classList.toggle('open')">
       <div class="author-avatar ${hasEps ? 'has-stories' : ''}">${esc(username[0].toUpperCase())}</div>
       <div class="author-card-meta">
         <div class="author-name">u/${esc(username)}</div>
-        <div class="author-badges">
-          ${epBadge}
-          <span class="badge badge-stories">📖 ${data.stories.length} stor${data.stories.length !== 1 ? 'ies' : 'y'}</span>
-        </div>
+        <div class="author-badges">${epBadge}${tftcBadge}${nosleepBadge}</div>
       </div>
       <div class="chevron">▼</div>
     </div>
-    <div class="author-stories">${epListHtml}${storiesHtml}</div>`;
+    <div class="author-stories">${epListHtml}${tftcHtml}${nosleepHtml}</div>`;
   return card;
 }
 
