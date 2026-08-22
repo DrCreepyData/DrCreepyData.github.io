@@ -820,28 +820,43 @@ function makeCard(s, sim, isSource) {
 // Shared inner HTML for story cards.
 // withAuthor=true adds a clickable author span (browse/finder); false omits it (author tab).
 function storyInnerHTML(s, sim, withAuthor, isSource) {
-  const date = new Date(s.created_utc * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  const wc = s.word_count >= 1000 ? (s.word_count / 1000).toFixed(1) + 'k' : s.word_count;
+  // Source stories from epSourceStories may lack Reddit metadata — handle gracefully
+  const hasRedditMeta = s.created_utc != null && s.created_utc > 0;
+  const date = hasRedditMeta
+    ? new Date(s.created_utc * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    : null;
+  const rawWc = s.word_count != null ? s.word_count
+    : (s.text ? s.text.split(/\s+/).filter(Boolean).length : null);
+  const wc = rawWc != null ? (rawWc >= 1000 ? (rawWc / 1000).toFixed(1) + 'k' : rawWc) : null;
   const srcSub = s.subreddit === 'nosleep' ? 'nosleep' : s.subreddit === 'creepypasta.com' ? 'creepypasta' : 'TFTC';
   const scoreHtml = sim !== null
     ? isSource
       ? `<div class="score-box source-box"><div class="num" style="font-size:1rem">⭐</div><div class="lbl">r/${srcSub}</div></div>`
       : `<div class="score-box"><div class="num green">${Math.round(sim * 100)}%</div><div class="lbl">match</div></div>`
     : `<div class="score-box"><div class="num gold">${s.score}</div><div class="lbl">upvotes</div></div>`;
-  const authorHtml = withAuthor
+  const authorHtml = (withAuthor && s.author)
     ? `<span class="author" onclick="filterByAuthor('${esc(s.author)}',event)">u/${esc(s.author)}</span>`
     : '';
+  const metaItems = [
+    authorHtml,
+    date ? `<span>📅 ${date}</span>` : '',
+    wc  ? `<span>📖 ${wc} words</span>` : '',
+    s.num_comments != null ? `<span>💬 ${s.num_comments}</span>` : '',
+    s.flair ? `<span class="flair-tag">${esc(s.flair)}</span>` : '',
+  ].filter(Boolean).join('\n          ');
+  const hasUrl = s.url && s.url !== 'undefined' && s.url !== 'null';
+  const redditBtn = hasUrl
+    ? `<a href="${esc(s.url)}" target="_blank" class="btn btn-reddit">Read on Reddit ↗</a>`
+    : '';
+  const moreBtn = (withAuthor && s.author)
+    ? `<button class="btn btn-secondary" onclick="filterByAuthor('${esc(s.author)}',event)">More by u/${esc(s.author)}</button>` : '';
   return `
-    <div class="card-header" data-id="${esc(s.id)}" data-url="${esc(s.url)}" onclick="toggleCard(this)">
+    <div class="card-header" data-id="${esc(s.id)}" data-url="${hasUrl ? esc(s.url) : ''}" onclick="toggleCard(this)">
       ${scoreHtml}
       <div class="card-meta">
         <div class="card-title">${esc(s.title)}</div>
         <div class="card-info">
-          ${authorHtml}
-          <span>📅 ${date}</span>
-          <span>📖 ${wc} words</span>
-          <span>💬 ${s.num_comments}</span>
-          ${s.flair ? `<span class="flair-tag">${esc(s.flair)}</span>` : ''}
+          ${metaItems}
         </div>
       </div>
       <div class="chevron">▼</div>
@@ -849,8 +864,8 @@ function storyInnerHTML(s, sim, withAuthor, isSource) {
     <div class="story-body">
       <div class="story-text" id="text-${esc(s.id)}"></div>
       <div class="story-actions">
-        <button class="btn-read" onclick="openReader('${esc(s.id)}','${esc(s.url)}','${esc(s.title)}','${esc(s.author)}',event)">📖 Read</button>
-        ${withAuthor ? `<button class="btn btn-secondary" onclick="filterByAuthor('${esc(s.author)}',event)">More by u/${esc(s.author)}</button>` : ''}
+        <button class="btn-read" onclick="openReader('${esc(s.id)}','${hasUrl ? esc(s.url) : ''}','${esc(s.title)}','${esc(s.author || '')}',event)">📖 Read</button>
+        ${moreBtn}
       </div>
     </div>`;
 }
@@ -920,16 +935,22 @@ async function openReader(storyId, storyUrl, title, author, evt) {
     <div class="reader-story-meta">u/${esc(author)} · <a href="${esc(storyUrl)}" target="_blank" style="color:inherit">view on Reddit ↗</a></div>
     <div class="reader-text reader-loading">Loading story…</div>`;
 
-  // Fetch text (use cache)
+  // Fetch text (use cache, or pre-loaded epSourceStories text, or Arctic Shift API)
   let text = textCache[storyId];
   if (!text) {
-    try {
-      const res = await fetch(`https://arctic-shift.photon-reddit.com/api/posts/ids?ids=${storyId}`);
-      const data = await res.json();
-      const post = (data.data || [])[0];
-      text = post ? (post.selftext || '') : '';
-      if (text) textCache[storyId] = text;
-    } catch(e) { text = ''; }
+    // Check if we already have the text in epSourceStories (assembled/classic stories)
+    const srcEntry = epSourceStories[storyId];
+    if (srcEntry && srcEntry.text) {
+      text = srcEntry.text;
+    } else {
+      try {
+        const res = await fetch(`https://arctic-shift.photon-reddit.com/api/posts/ids?ids=${storyId}`);
+        const data = await res.json();
+        const post = (data.data || [])[0];
+        text = post ? (post.selftext || '') : '';
+      } catch(e) { text = ''; }
+    }
+    if (text) textCache[storyId] = text;
   }
 
   const formatted = text
@@ -940,13 +961,14 @@ async function openReader(storyId, storyUrl, title, author, evt) {
   const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
   const mins = wordCount > 0 ? `~${Math.ceil(wordCount / 200)} min read · ${wordCount >= 1000 ? (wordCount/1000).toFixed(1)+'k' : wordCount} words` : '';
 
+  const linkBar = storyUrl
+    ? `<div class="reader-link-bar"><a href="${esc(storyUrl)}" target="_blank" class="rd-link reddit">📖 Read on Reddit ↗</a></div>`
+    : '';
   content.innerHTML = `
     <div class="reader-story-title">${esc(title)}</div>
-    <div class="reader-story-meta">u/${esc(author)}${mins ? ' · ' + mins : ''}</div>
+    <div class="reader-story-meta">${author ? 'u/' + esc(author) : ''}${mins ? (author ? ' · ' : '') + mins : ''}</div>
     <div class="reader-text">${formatted}</div>
-    <div class="reader-link-bar">
-      <a href="${esc(storyUrl)}" target="_blank" class="rd-link reddit">📖 Read on Reddit ↗</a>
-    </div>`;
+    ${linkBar}`;
 
   body.scrollTop = 0;
   rdUpdateProgress();
@@ -960,8 +982,9 @@ async function toggleCard(header) {
   const storyUrl = header.dataset.url;
   const el = document.getElementById('text-' + storyId);
   if (!el || el.dataset.loaded) return;
-  // Always show the link immediately
-  el.innerHTML = `<div style="margin-bottom:12px"><a href="${storyUrl}" target="_blank" class="btn btn-reddit">Read on Reddit ↗</a></div><div id="text-body-${storyId}">Loading story…</div>`;
+  // Show Reddit link only if URL exists
+  const redditLinkHtml = storyUrl ? `<div style="margin-bottom:12px"><a href="${storyUrl}" target="_blank" class="btn btn-reddit">Read on Reddit ↗</a></div>` : '';
+  el.innerHTML = `${redditLinkHtml}<div id="text-body-${storyId}">Loading story…</div>`;
   el.dataset.loaded = '1';
   if (textCache[storyId]) { document.getElementById('text-body-'+storyId).innerHTML = textCache[storyId]; return; }
   try {
