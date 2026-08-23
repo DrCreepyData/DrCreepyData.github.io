@@ -68,9 +68,9 @@ tftc_authors_set.discard("")
 tftc_authors_set.discard("[deleted]")
 tftc_authors_set.discard("AutoModerator")
 
-SHOWN_SUBS = {"TalesFromTheCreeps", "nosleep"}
+SHOWN_SUBS = {"TalesFromTheCreeps", "nosleep", "shortscarystories", "TheCrypticCompendium"}
 
-author_data = defaultdict(lambda: {"tftc": [], "nosleep": [], "episodes": []})
+author_data = defaultdict(lambda: {"tftc": [], "nosleep": [], "shortscarystories": [], "TheCrypticCompendium": [], "episodes": []})
 
 for p in all_posts:
     sub = subreddit_of(p)
@@ -90,7 +90,8 @@ for p in all_posts:
         "created_utc": p["created_utc"],
         "flair": p.get("flair",""),
     }
-    author_data[author][sub if sub != "TalesFromTheCreeps" else "tftc"].append(entry)
+    key = "tftc" if sub == "TalesFromTheCreeps" else sub
+    author_data[author][key].append(entry)
 
 # Add episode matches
 for author, eps in author_to_episodes.items():
