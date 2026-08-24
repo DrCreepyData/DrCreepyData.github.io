@@ -801,7 +801,7 @@ function setMode(mode) {
     document.getElementById('countBadge').textContent = '';
   } else if (mode === 'browse') {
     document.getElementById('stateMsg').style.display = 'none';
-    if (filtered.length === 0) onFilter();
+    onFilter();
   } else if (mode === 'authors') {
     document.getElementById('stateMsg').style.display = 'none';
     if (document.getElementById('authorList').children.length === 0) renderAuthors();
