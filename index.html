@@ -593,6 +593,7 @@ function toggleAuthorBar() {
 function filterByAuthor(author, e) {
   e.stopPropagation();
   setMode('browse');
+  document.getElementById('searchInput').value = '';
   document.getElementById('authorInput').value = author;
   authorBarOpen = true;
   document.getElementById('authorBar').classList.add('show');
@@ -613,6 +614,7 @@ function buildAuthorChips() {
     chip.className = 'author-chip';
     chip.textContent = author;
     chip.onclick = () => {
+      document.getElementById('searchInput').value = '';
       document.getElementById('authorInput').value = author;
       document.querySelectorAll('.author-chip').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
