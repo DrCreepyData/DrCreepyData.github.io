@@ -788,7 +788,14 @@ function setMode(mode) {
   document.getElementById('browsePanel').classList.toggle('hidden', mode !== 'browse');
   document.getElementById('authorsPanel').classList.toggle('hidden', mode !== 'authors');
   document.getElementById('tftcPanel').classList.toggle('hidden', mode !== 'tftc');
-  document.getElementById('authorBar').classList.toggle('hidden', mode !== 'browse');
+  const authorBar = document.getElementById('authorBar');
+  if (mode !== 'browse') {
+    authorBar.classList.add('hidden');
+    authorBar.classList.remove('show');
+    authorBarOpen = false;
+  } else {
+    authorBar.classList.remove('hidden');
+  }
 
   const isListMode = mode === 'authors' || mode === 'tftc';
   document.getElementById('storyList').style.display      = isListMode ? 'none' : '';

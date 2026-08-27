@@ -108,10 +108,16 @@ def main():
     print(f"Saved {len(all_posts)} total posts")
 
     # Build stories.json: TFTC-only stories for Browse/Episode Finder
-    selected = [p for p in all_posts if p.get("subreddit","") == "TalesFromTheCreeps"
+    def is_tftc(p):
+        if p.get("subreddit","") == "TalesFromTheCreeps":
+            return True
+        url = p.get("url","")
+        return "/r/TalesFromTheCreeps/" in url
+
+    selected = [p for p in all_posts if is_tftc(p)
                 and len((p.get("selftext") or "").split()) >= MIN_WORDS
                 and (p.get("selftext") or "").strip() not in ("[removed]","[deleted]")
-                and (p.get("link_flair_text") or "").strip() not in EXCLUDED]
+                and (p.get("flair") or p.get("link_flair_text") or "").strip() not in EXCLUDED]
     print(f"Selected {len(selected)} stories for site")
 
     def make_story(p):
